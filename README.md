@@ -13,7 +13,7 @@ software_install.bat 文件为安装执行脚本。
 列表中包含
 
 ```console
-9PKTQ5699M62
+9PKTQ5699M62 (iCloud for Windows)
 MSPCManager
 Git.Git
 Python.Python
