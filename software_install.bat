@@ -12,10 +12,5 @@ for /f "tokens=*" %%a in (software_list.txt) do (
     winget install %%a 
 )
 
-REM 获取桌面路径
-for /f "tokens=2 delims==" %%A in ('wmic path win32_desktop get name /format:list ^| findstr "="') do (
-    set "Desktop=%%A"
-)
-
 echo All software is already installed!
 pause
