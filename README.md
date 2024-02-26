@@ -10,33 +10,34 @@ software_install.bat 文件为安装执行脚本。
 ## 软件安装列表
 
 可根据自己的需求，在终端中使用命令 'winget search 关键词' 来搜索安装包，将ID添加到软件安装列表中。
-> 列表中包含
-9PKTQ5699M62 
-MSPCManager 
-Git.Git 
-Python.Python 
-Microsoft.VisualStudioCode 
-Tencent.WeixinDevTools 
-7zip.7zip 
-Figma.Figma 
-Krita.Krita 
-BlenderFoundation.Blender 
-Unity.UnityHub 
-Telegram.TelegramDesktop 
-Tencent.WeChat 
-Tencent.TIM 
-voidtools.Everything 
-ByteDance.JianyingPro 
-Daum.PotPlayer 
-xanderfrangos.twinkletray 
-Notion.Notion 
-Obsidian.Obsidian 
-Yuanli.uTools 
-QL-Win.QuickLook 
-nomic.gpt4all 
-Valve.Steam 
-> 
+列表中包含
 
+```console
+9PKTQ5699M62
+MSPCManager
+Git.Git
+Python.Python
+Microsoft.VisualStudioCode
+Tencent.WeixinDevTools
+7zip.7zip
+Figma.Figma
+Krita.Krita
+BlenderFoundation.Blender
+Unity.UnityHub
+Telegram.TelegramDesktop
+Tencent.WeChat
+Tencent.TIM
+voidtools.Everything
+ByteDance.JianyingPro
+Daum.PotPlayer
+xanderfrangos.twinkletray
+Notion.Notion
+Obsidian.Obsidian
+Yuanli.uTools
+QL-Win.QuickLook
+nomic.gpt4all
+Valve.Steam
+```
 ## 使用方式
 
 将压缩包解压到同一个文件夹内
