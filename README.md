@@ -10,7 +10,7 @@ software_install.bat 文件为安装执行脚本。
 ## 软件安装列表
 
 可根据自己的需求，在终端中使用命令 'winget search 关键词' 来搜索安装包，将ID添加到软件安装列表中。
-9PKTQ5699M62 （iCloud）
+9PKTQ5699M62
 MSPCManager
 Git.Git
 Python.Python
@@ -24,7 +24,6 @@ Unity.UnityHub
 Telegram.TelegramDesktop
 Tencent.WeChat
 Tencent.TIM
-Unity.UnityHub
 voidtools.Everything
 ByteDance.JianyingPro
 Daum.PotPlayer
