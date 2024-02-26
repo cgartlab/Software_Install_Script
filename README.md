@@ -10,6 +10,7 @@ software_install.bat 文件为安装执行脚本。
 ## 软件安装列表
 
 可根据自己的需求，在终端中使用命令 'winget search 关键词' 来搜索安装包，将ID添加到软件安装列表中。
+> 列表中包含
 9PKTQ5699M62
 MSPCManager
 Git.Git
@@ -34,6 +35,7 @@ Yuanli.uTools
 QL-Win.QuickLook
 nomic.gpt4all
 Valve.Steam
+> 
 
 ## 使用方式
 
