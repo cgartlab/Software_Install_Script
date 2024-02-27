@@ -1,0 +1,15 @@
+Git
+Python@3
+Visual-Studio-Code
+Figma
+Krita
+Blender
+Unity-Hub
+Telegram-Desktop
+WeChat
+Notion
+Obsidian
+uTools
+sfm
+flomo
+Steam
