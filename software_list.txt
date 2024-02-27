@@ -14,10 +14,12 @@ Tencent.WeChat
 Tencent.TIM
 voidtools.Everything
 ByteDance.JianyingPro
+alibaba.adrive
 Daum.PotPlayer
 xanderfrangos.twinkletray
 Notion.Notion
 Obsidian.Obsidian
+calibre.calibre
 Yuanli.uTools
 QL-Win.QuickLook
 nomic.gpt4all
