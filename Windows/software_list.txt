@@ -13,6 +13,7 @@ Telegram.TelegramDesktop
 Tencent.WeChat
 Tencent.TIM
 voidtools.Everything
+OBSProject.OBSStudio
 ByteDance.JianyingPro
 alibaba.adrive
 Daum.PotPlayer
