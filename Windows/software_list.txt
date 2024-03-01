@@ -4,6 +4,9 @@ Python.Python
 Microsoft.VisualStudioCode
 Tencent.WeixinDevTools
 7zip.7zip
+FinalWire.AIDA64.Extreme
+CPUID.CPU-Z
+Eassos.DiskGenius
 Figma.Figma
 KDE.Krita
 BlenderFoundation.Blender
@@ -16,6 +19,7 @@ OBSProject.OBSStudio
 ByteDance.JianyingPro
 alibaba.adrive
 Daum.PotPlayer
+NetEase.CloudMusic
 xanderfrangos.twinkletray
 Notion.Notion
 Obsidian.Obsidian
