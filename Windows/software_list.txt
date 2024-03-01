@@ -25,6 +25,7 @@ Notion.Notion
 Obsidian.Obsidian
 calibre.calibre
 yang991178.fluent-reader
+Zentraedi.ZSPACE
 Yuanli.uTools
 QL-Win.QuickLook
 nomic.gpt4all
