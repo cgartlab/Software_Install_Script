@@ -30,3 +30,4 @@ Yuanli.uTools
 QL-Win.QuickLook
 nomic.gpt4all
 Valve.Steam
+FiloSottile.mkcert
