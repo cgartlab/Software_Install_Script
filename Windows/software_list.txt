@@ -32,3 +32,4 @@ nomic.gpt4all
 Valve.Steam
 FiloSottile.mkcert
 Tonec.InternetDownloadManager
+HandBrake.HandBrake
