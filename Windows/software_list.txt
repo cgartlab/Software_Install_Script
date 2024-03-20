@@ -33,3 +33,4 @@ Valve.Steam
 FiloSottile.mkcert
 Tonec.InternetDownloadManager
 HandBrake.HandBrake
+oldj.switchhosts
