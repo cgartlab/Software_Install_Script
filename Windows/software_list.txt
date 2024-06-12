@@ -34,3 +34,5 @@ FiloSottile.mkcert
 Tonec.InternetDownloadManager
 HandBrake.HandBrake
 oldj.switchhosts
+Google.PlatformTools
+Genymobile.scrcpy
