@@ -6,7 +6,7 @@ REM 本项目受 Apache License Version 2.0 约束
 title 更换 Winget 列表源
 
 ECHO.
-ECHO 请注意，安装脚本会进行以下操作：申请管理员权限，更换 Winget 列表源。
+ECHO 请注意，安装脚本会进行以下操作：申请管理员权限，切换 Winget 列表源。
 ECHO 若同意，请按任意键继续......
 pause > nul
 
