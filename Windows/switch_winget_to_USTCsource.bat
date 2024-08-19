@@ -1,24 +1,83 @@
-@echo off
+@Echo off&setlocal,EnableDelayedExpansion
 
 REM License
-REM æœ¬é¡¹ç›®å— Apache License Version 2.0 çº¦æŸ
+REM ±¾ÏîÄ¿ÊÜ Apache License Version 2.0 Ô¼Êø
 
-title æ›´æ¢ Winget åˆ—è¡¨æº
+REM ¼ì²éÊÇ·ñÒÔ¹ÜÀíÔ±È¨ÏŞÔËĞĞ
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    cls
+    title   ³õÊ¼»¯Ê§°Ü£¬ĞèÒª¹ÜÀíÔ±È¨ÏŞ......
+    echo:
+    echo:
+    echo:
+    echo:
+    echo:       ______________________________________________________________
+    echo:
+    echo:             ³õÊ¼»¯Ê§°Ü£¡
+    echo:
+    echo:             ´íÎó: ĞèÒª¹ÜÀíÔ±È¨ÏŞ£¡
+    echo:             ½â¾ö·½°¸£ºÇëÓÒ¼üµ¥»÷´Ë½Å±¾²¢Ñ¡Ôñ "ÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ"
+    echo:             __________________________________________________  
+    echo:
+    echo:             ÎŞ·¨¼ÌĞøÖ´ĞĞ£¬Çë°´ÈÎÒâ¼üÍË³ö¡£
+    echo:
+    echo:       ______________________________________________________________
+    echo:
+    pause > nul
+    taskkill /f /im cmd.exe 
+    exit /b )
 
-ECHO.
-ECHO è¯·æ³¨æ„ï¼Œå®‰è£…è„šæœ¬ä¼šè¿›è¡Œä»¥ä¸‹æ“ä½œï¼šç”³è¯·ç®¡ç†å‘˜æƒé™ï¼Œåˆ‡æ¢ Winget åˆ—è¡¨æºã€‚
-ECHO è‹¥åŒæ„ï¼Œè¯·æŒ‰ä»»æ„é”®ç»§ç»­......
-pause > nul
+:Choice
+cls
+title   Software Install Script
+echo:
+echo:
+echo:
+echo:
+echo:       ______________________________________________________________
+echo:
+echo:             ÇĞ»» Winget ÁĞ±íÔ´
+echo:
+echo:             ±¾½Å±¾»áÓĞÒÔÏÂĞĞÎª:
+echo:             1.¸ü»» Winget ÁĞ±íÔ´ÎªÖĞ¹ú¿ÆÑ§¼¼Êõ´óÑ§¾µÏñÔ´
+echo:             2.¼¤»î Winget ´úÀíÅäÖÃ
+echo:
+echo:             __________________________________________________      
+echo:
+echo:             [Y] Í¬Òâ 
+echo:             [N] ¾Ü¾ø
+echo:             [R] ÖØÖÃÁĞ±íÔ´
+echo:
+echo:       ______________________________________________________________
+echo:
+set /p Choice=ÇëÊäÈë(Y/N/R)ÒÔ¼ÌĞø:
+IF /i "!Choice!"=="Y" Goto :Next
+IF /i "!Choice!"=="R" Goto :Rollback
+IF /i "!Choice!"=="N" Goto :End
+Echo ÇëÊäÈëY/N/R£¬Çë°´ÈÎÒâ¼ü·µ»Ø¡£
+Pause>Nul&Goto :Choice
 
-REM ææƒå‘½ä»¤
-%1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)&&exit
-cd /d "%~dp0"
-
-REM æ›´æ¢åˆ—è¡¨æº ä¸º ä¸­ç§‘å¤§æº
+REM Í¬ÒâÖ´ĞĞ¿é
+:Next
+echo ÕıÔÚ½« Winget ÁĞ±íÔ´ÇĞ»»µ½ÖĞ¹ú¿ÆÑ§¼¼Êõ´óÑ§¾µÏñÔ´
 winget source remove winget
 winget source add winget https://mirrors.ustc.edu.cn/winget-source
 
+echo ÕıÔÚ¼¤»î Winget ´úÀíÅäÖÃ
+winget settings --enable ProxyCommandLineOptions
+taskkill /f /im cmd.exe
+exit /b
 
-ECHO åˆ‡æ¢ç»“æŸï¼Œè¯·æŒ‰ä»»æ„é”®é€€å‡ºã€‚
-pause > nul
-exit
+REM ÖØÖÃÖ´ĞĞ¿é
+:Rollback
+echo ÖØÖÃ Winget ÁĞ±íÔ´
+winget source reset winget
+taskkill /f /im cmd.exe
+exit /b
+
+REM ÖÕÖ¹Ö´ĞĞ¿é
+:End
+ECHO ÓÃ»§È¡Ïû°²×°£¬ÕıÔÚÍË³ö¡£
+taskkill /f /im cmd.exe
+exit /b
