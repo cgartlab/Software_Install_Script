@@ -13,11 +13,8 @@ REM 判断v2rayN是否运行
 tasklist | find /i "v2rayN.exe" >nul
 if %errorlevel% EQU 0 (
     ECHO Found v2rayN running. Continuing.
-
-    REM 设置winget代理配置
-    winget settings --enable ProxyCommandLineOptions
-
-    REM 逐行读取软件列表文件并安装软件，且推荐http代理地址
+    cls
+    REM 逐行读取软件列表文件并安装软件，且使用http代理进行加速
     for /f "tokens=*" %%a in (software_list.txt) do (
         ECHO 正在安装: %%a
         winget install %%a --proxy http://127.0.0.1:10809
