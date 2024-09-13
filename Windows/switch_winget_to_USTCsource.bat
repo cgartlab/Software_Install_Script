@@ -72,7 +72,7 @@ exit /b
 REM 重置执行块
 :Rollback
 echo 重置 Winget 列表源
-winget source reset winget
+winget source reset --force
 taskkill /f /im cmd.exe
 exit /b
 
