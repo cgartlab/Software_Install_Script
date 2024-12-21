@@ -1,7 +1,7 @@
-# icloud
+# iCloud
 9PKTQ5699M62
 
-# Dev 
+# Dev 开发
 Git.Git
 GitHub.GitHubDesktop
 Python.Python
@@ -13,7 +13,8 @@ Microsoft.WindowsTerminal
 Google.PlatformTools
 Genymobile.scrcpy
 
-# nomal tools
+# nomal tools 常用工具
+Rime.Weasel
 ClashVergeRev.ClashVergeRev
 7zip.7zip
 FinalWire.AIDA64.Extreme
@@ -23,15 +24,15 @@ Microsoft.Office
 HandBrake.HandBrake
 voidtools.Everything
 OBSProject.OBSStudio
-alibaba.adrive
 Daum.PotPlayer
 NetEase.CloudMusic
 xanderfrangos.twinkletray
 Zentraedi.ZSPACE
 Yuanli.uTools
 QL-Win.QuickLook
+Klocman.BulkCrapUninstaller
 
-# design tools
+# design tools 设计工具
 Unity.UnityHub
 Wacom.WacomTabletDriver
 Figma.Figma
@@ -39,20 +40,18 @@ ByteDance.JianyingPro
 KDE.Krita
 BlenderFoundation.Blender
 
-# social
-Discord.Discord
+# social media 社交媒体
 Telegram.TelegramDesktop
 Tencent.WeChat
-Tencent.WeChat.Universal
 Tencent.TIM
 
-# KVM
+# KVM 知识管理
 Notion.Notion
 Obsidian.Obsidian
 calibre.calibre
 
-# AI
+# AI 
 nomic.gpt4all
 
-# Gaming
+# Game 游戏
 Valve.Steam

@@ -14,3 +14,4 @@ sfm
 flomo
 Steam
 scrcpy
+squirrel
