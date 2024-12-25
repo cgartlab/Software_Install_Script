@@ -15,3 +15,9 @@ flomo
 Steam
 scrcpy
 squirrel
+oh-my-posh
+
+font-lxgw-wenkai
+font-hack-nerd-font 
+font-source-sans-3
+font-source-serif-4

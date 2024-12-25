@@ -8,12 +8,15 @@ echo 'export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core
 source ~/.bash_profile
 echo "Homebrew source switched to China."
 
+# 获取脚本所在目录的路径
+script_dir=$(dirname "$0")
+
 # 定义软件列表文件路径
-software_list="packages.txt"
+software_list="${script_dir}/packages.txt"
 
 # 检查软件列表文件是否存在
 if [ ! -f "$software_list" ]; then
-    echo "Software list file $software_list not found!"
+    echo "软件列表文件 $software_list 不存在!"
     exit 1
 fi
 
@@ -21,11 +24,11 @@ fi
 while IFS= read -r package; do
     echo "Checking if $package is installed..."
     if brew list --versions "$package" > /dev/null; then
-        echo "$package is already installed. Skipping."
+        echo "$package 已经安装，跳过。"
     else
         echo "Installing $package..."
         brew install "$package"
     fi
 done < "$software_list"
 
-echo "All software installation completed."
+echo "所有软件安装完成！"
