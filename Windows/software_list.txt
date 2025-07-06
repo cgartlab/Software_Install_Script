@@ -1,58 +1,70 @@
 # iCloud
-9PKTQ5699M62
+9pktq5699m62
 
 # Dev 开发
+Gyan.FFmpeg
+Filosottile.Mkcert
+Genymobile.Scrcpy
 Git.Git
+OpenJS.NodeJS
 GitHub.GitHubDesktop
-Python.Python
-Microsoft.VisualStudioCode
-Tencent.WeixinDevTools
-FiloSottile.mkcert
-Microsoft.PowerShell
-Microsoft.WindowsTerminal
 Google.PlatformTools
-Genymobile.scrcpy
+Microsoft.PowerShell
+Microsoft.VisualStudioCode
+Microsoft.WindowsTerminal
+JanDeDobbeleer.OhMyPosh
+Okibcn.Nano # 终端文本编辑器
+Python.Python
+Ndd.Notepad-- # 文本编辑器
+Nepnep.Neofetch-Win # 系统信息查看
+FontForge.FontForge # 字体编辑器
 
-# nomal tools 常用工具
-Rime.Weasel
-ClashVergeRev.ClashVergeRev
+# Normal Tools 常用工具
 7zip.7zip
-FinalWire.AIDA64.Extreme
-CPUID.CPU-Z
-Eassos.DiskGenius
-Microsoft.Office
-HandBrake.HandBrake
-voidtools.Everything
-OBSProject.OBSStudio
+Syncthing.Syncthing
+Clashvergerev.Clashvergerev # 代理
+KaringX.Karing # 代理
+Cpuid.CPU-Z
 Daum.PotPlayer
-NetEase.CloudMusic
-xanderfrangos.twinkletray
-Zentraedi.ZSPACE
-Yuanli.uTools
-QL-Win.QuickLook
+Eassos.DiskGenius
+FinalWire.AIDA64.Extreme
+HandBrake.HandBrake
 Klocman.BulkCrapUninstaller
-zhongyang219.TrafficMonitor.Full
+Microsoft.Office
+Netease.CloudMusic
+ObsProject.OBSStudio
+Ql-Win.QuickLook
+Rime.Weasel
+Voidtools.Everything
+XanderFrangos.TwinkleTray
+Yuanli.UTools # 下一版删除
+Rubick.Rubick # 快捷启动平替
+Zentraedi.ZSpace
+Zhongyang219.TrafficMonitor.Full
 
-# design tools 设计工具
+# Design Tools 设计工具
+Ogdesign.Eagle # 设计素材库
+BlenderFoundation.Blender
+Bytedance.JianyingProCLS
+Figma.Figma
+KDE.Krita
 Unity.UnityHub
 Wacom.WacomTabletDriver
-Figma.Figma
-ByteDance.JianyingPro
-KDE.Krita
-BlenderFoundation.Blender
 
-# social media 社交媒体
+# Social Media 社交媒体
 Telegram.TelegramDesktop
-Tencent.WeChat
 Tencent.TIM
+Tencent.WeChat.Universal # 新版微信
 
 # KVM 知识管理
+EuSoft.Eudic # 欧路词典
+Calibre.Calibre
 Notion.Notion
 Obsidian.Obsidian
-calibre.calibre
+RssNext.Folo
 
-# AI 
-nomic.gpt4all
+# AI
+Upscayl.Upscayl # 图片放大
 
 # Game 游戏
 Valve.Steam
