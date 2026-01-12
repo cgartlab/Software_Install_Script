@@ -33,12 +33,10 @@ Klocman.BulkCrapUninstaller
 Microsoft.Office
 Netease.CloudMusic
 ObsProject.OBSStudio
-Ql-Win.QuickLook
+Microsoft.PowerToys
 Rime.Weasel
 Voidtools.Everything
 XanderFrangos.TwinkleTray
-Yuanli.UTools # 下一版删除
-Rubick.Rubick # 快捷启动平替
 Zentraedi.ZSpace
 Zhongyang219.TrafficMonitor.Full
 
