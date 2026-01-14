@@ -1,5 +1,9 @@
 # 常用软件安装脚本
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cgartlab/Software_Install_Script&type=Date)](https://star-history.com/#cgartlab/Software_Install_Script&Date)
+
 ## 介绍
 
 这是我自用的一个 Windows 和 macOS 的软件批量安装脚本。
@@ -39,3 +43,4 @@ macOS 文件夹内
 打开终端，将 `install_packages.sh` 文件拖入终端对话框中，回车。
 
 Enjoy it！
+
