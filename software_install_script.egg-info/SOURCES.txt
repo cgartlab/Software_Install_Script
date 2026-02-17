@@ -3,8 +3,12 @@ README.md
 setup.py
 sis/__init__.py
 sis/config.py
+sis/i18n.py
 sis/installer.py
+sis/logo.py
 sis/main.py
+sis/themes.py
+sis/ui.py
 software_install_script.egg-info/PKG-INFO
 software_install_script.egg-info/SOURCES.txt
 software_install_script.egg-info/dependency_links.txt

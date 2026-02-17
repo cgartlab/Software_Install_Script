@@ -18,6 +18,8 @@ from rich.text import Text
 from rich.align import Align
 from rich import box
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+import questionary
+from questionary import Style
 
 from sis.installer import WindowsInstaller, MacOSInstaller
 from sis.config import Config
@@ -26,6 +28,18 @@ from sis.ui import get_ui, Colors, Icons, UIComponents
 from sis.logo import get_rich_logo, get_brand_tagline
 
 console = Console()
+
+custom_style = Style([
+    ('qmark', 'fg:cyan bold'),
+    ('question', 'fg:white bold'),
+    ('answer', 'fg:cyan bold'),
+    ('pointer', 'fg:cyan bold'),
+    ('highlighted', 'fg:cyan bold'),
+    ('selected', 'fg:green'),
+    ('separator', 'fg:cyan'),
+    ('instruction', 'fg:gray'),
+    ('text', 'fg:white'),
+])
 
 
 def _show_splash_screen():
@@ -561,50 +575,51 @@ def tui():
     """Launch text-based user interface"""
     ui = get_ui()
     
-    # Show splash screen on first launch
     _show_splash_screen()
     
     while True:
         ui.clear_screen()
         
-        # Print compact logo
         logo = get_rich_logo("compact")
         console.print(logo)
         console.print()
         
-        # Create main menu
-        menu_items = [
-            ("1", Icons.INSTALL, t('menu_install')),
-            ("2", Icons.CONFIG, t('menu_config')),
-            ("3", Icons.SEARCH, t('menu_search')),
-            ("4", Icons.SETTINGS, t('menu_settings')),
-            ("5", Icons.EXIT, t('menu_exit')),
+        menu_options = [
+            f"{Icons.INSTALL} {t('menu_install')}",
+            f"{Icons.CONFIG} {t('menu_config')}",
+            f"{Icons.SEARCH} {t('menu_search')}",
+            f"{Icons.SETTINGS} {t('menu_settings')}",
+            f"{Icons.EXIT} {t('menu_exit')}",
         ]
         
-        menu_panel = ui.create_main_menu(menu_items)
-        console.print(Align.center(menu_panel))
+        console.print(f"[bold {Colors.PRIMARY}]{t('main_menu')}[/]")
         console.print()
         
-        # Show footer hints
-        ui.show_footer()
+        choice = questionary.select(
+            t('enter_choice'),
+            choices=menu_options,
+            style=custom_style,
+            use_indicator=True,
+            use_arrow_keys=True,
+        ).ask()
         
-        choice = Prompt.ask(
-            f"[{Colors.PRIMARY}]{t('enter_choice')}[/]",
-            choices=["1", "2", "3", "4", "5"]
-        )
+        if choice is None:
+            break
         
-        if choice == "1":
+        choice_index = menu_options.index(choice)
+        
+        if choice_index == 0:
             _install()
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
-        elif choice == "2":
+        elif choice_index == 1:
             _config()
-        elif choice == "3":
+        elif choice_index == 2:
             _search_software()
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
-        elif choice == "4":
+        elif choice_index == 3:
             console.print(f"\n[bold {Colors.WARNING}]{Icons.SETTINGS} {t('settings_not_implemented')}[/]")
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
-        elif choice == "5":
+        elif choice_index == 4:
             console.print(f"\n[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('exiting')}[/]")
             break
 
