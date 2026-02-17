@@ -444,3 +444,74 @@
                         <br>
                         ████████████████████░░░░░ 75%<br>
                         <br>
+                        安装中...<br>
+                        <br>
+                        Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status<br>
+                        ─────────────────────────────────────────<br>
+                        Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Git.Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
+                        VS Code &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Microsoft.VSCode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
+                        7-Zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7zip.7zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;◉ 安装中<br>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="tech-stack">
+            <h2>🏗️ 技术栈</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <a href="https://golang.org" target="_blank">Go</a>
+                </div>
+                <div class="tech-item">
+                    <a href="https://github.com/charmbracelet/bubbletea" target="_blank">Bubble Tea</a>
+                </div>
+                <div class="tech-item">
+                    <a href="https://github.com/charmbracelet/lipgloss" target="_blank">Lipgloss</a>
+                </div>
+                <div class="tech-item">
+                    <a href="https://github.com/spf13/cobra" target="_blank">Cobra</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>Made with ❤️ by <a href="https://cgartlab.com">CGArtLab</a></p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/yourusername/swiftinstall">GitHub</a> •
+                <a href="https://cgartlab.com/SwiftInstall/docs">文档</a> •
+                <a href="https://github.com/yourusername/swiftinstall/releases">下载</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        function showTab(platform) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(platform).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        function copyCode(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => {
+                    btn.textContent = '复制';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
