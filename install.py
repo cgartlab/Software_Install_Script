@@ -217,44 +217,6 @@ def install_project(python_cmd, pip_cmd, project_dir):
         print_error(f"Installation failed: {e}")
         sys.exit(1)
 
-# Verify the installation
-def verify_installation():
-    print_header("Verifying Installation")
-    
-    try:
-        # Check if sis command is available
-        result = subprocess.run(
-            ['sis', 'version'],
-            capture_output=True,
-            text=True
-        )
-        
-        if result.returncode == 0:
-            print_success(f"SIS is installed correctly: {result.stdout.strip()}")
-        else:
-            print_warning("sis command not found in PATH or failed to run. Trying with python -m...")
-            
-            # Try with python -m
-            python_cmd = 'python3' if shutil.which('python3') else 'python'
-            result = subprocess.run(
-                [python_cmd, '-m', 'sis.main', 'version'],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode == 0:
-                print_success(f"SIS is installed correctly: {result.stdout.strip()}")
-                print_warning("Note: You may need to add the Python scripts directory to your PATH.")
-            else:
-                print_error("Failed to verify installation.")
-                print_error(f"Error output: {result.stderr}")
-                sys.exit(1)
-        
-    except Exception as e:
-        print_error(f"Verification failed: {e}")
-        sys.exit(1)
-
-# Main installation function
 def main():
     print("\n" + "="*60)
     print(f"{Colors.GREEN}Software Install Script (SIS) - Online Installer{Colors.RESET}")
@@ -266,7 +228,6 @@ def main():
     print_info("  2. Check pip installation")
     print_info("  3. Get project files")
     print_info("  4. Install dependencies")
-    print_info("  5. Verify installation")
     
     # Interactive prompt
     if sys.stdin.isatty():
@@ -286,9 +247,6 @@ def main():
     
     # Step 4: Install project
     install_project(python_cmd, pip_cmd, project_dir)
-    
-    # Step 5: Verify installation
-    verify_installation()
     
     print("\n" + "="*60)
     print(f"{Colors.GREEN}Installation Complete!{Colors.RESET}")
