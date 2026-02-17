@@ -48,6 +48,9 @@ var rootCmd = &cobra.Command{
 		if _, err := fmt.Scanln(&response); err != nil {
 			// 输入错误时默认启动交互式菜单
 			log.Printf("Warning: failed to read user input: %v", err)
+			fmt.Println()
+			fmt.Println(ui.InfoStyle.Render("Input reading failed. Launching interactive menu automatically..."))
+			fmt.Println()
 			runInteractiveTUI()
 			return
 		}
