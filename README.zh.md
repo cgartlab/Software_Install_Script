@@ -26,8 +26,8 @@ SwiftInstall 是一款支持 Windows 和 macOS 的现代化批量软件安装 CL
 
 | 平台 | 命令 |
 |------|------|
-| Windows | `irm https://cgartlab.com/Software_Install_Script/install.py \| python3` |
-| macOS | `curl -fsSL https://cgartlab.com/Software_Install_Script/install.py \| python3` |
+| Windows | `irm https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py \| python3` |
+| macOS | `curl -fsSL https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py \| python3` |
 
 ## 使用方法
 

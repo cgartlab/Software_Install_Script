@@ -26,8 +26,8 @@ SwiftInstall is a modern CLI tool for batch software installation on Windows and
 
 | Platform | Command |
 |----------|---------|
-| Windows | `irm https://cgartlab.com/Software_Install_Script/install.py \| python3` |
-| macOS | `curl -fsSL https://cgartlab.com/Software_Install_Script/install.py \| python3` |
+| Windows | `irm https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py \| python3` |
+| macOS | `curl -fsSL https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py \| python3` |
 
 ## Usage
 

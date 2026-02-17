@@ -7,17 +7,17 @@ Software Install Script - Online Installer
 This script provides an interactive, one-line installation method
 for the Software Install Script (SIS) tool.
 
-Usage (Recommended - Using Custom Domain):
-  curl -fsSL https://cgartlab.com/Software_Install_Script/install.py | python3 -
-  
-  # Or for Windows PowerShell:
-  irm https://cgartlab.com/Software_Install_Script/install.py | python3 -
-
-Usage (GitHub Raw):
+Usage (GitHub Raw - Recommended):
   curl -fsSL https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py | python3 -
-  
+
   # Or for Windows PowerShell:
-  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py" -OutFile "install.py"; python install.py
+  irm https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py | python3 -
+
+Usage (GitHub Pages):
+  curl -fsSL https://cgartlab.github.io/Software_Install_Script/install.py | python3 -
+
+  # Or for Windows PowerShell:
+  irm https://cgartlab.github.io/Software_Install_Script/install.py | python3 -
 """
 
 import os
@@ -91,21 +91,12 @@ BRAND_TAGLINE = "Fast • Simple • Reliable • Cross-Platform"
 # =============================================================================
 
 LOGO = f"""
-{Colors.BRIGHT_CYAN}   ███████╗██╗    ██╗██╗████████╗██╗  ██╗██╗███╗   ██╗███████╗████████╗{Colors.RESET}
-{Colors.BRIGHT_CYAN}   ██╔════╝██║    ██║██║╚══██╔══╝██║  ██║██║████╗  ██║██╔════╝╚══██╔══╝{Colors.RESET}
-{Colors.BRIGHT_CYAN}   ███████╗██║ █╗ ██║██║   ██║   ███████║██║██╔██╗ ██║█████╗     ██║   {Colors.RESET}
-{Colors.BRIGHT_CYAN}   ╚════██║██║███╗██║██║   ██║   ██╔══██║██║██║╚██╗██║██╔══╝     ██║   {Colors.RESET}
-{Colors.BRIGHT_CYAN}   ███████║╚███╔███╔╝██║   ██║   ██║  ██║██║██║ ╚████║███████╗   ██║   {Colors.RESET}
-{Colors.BRIGHT_CYAN}   ╚══════╝ ╚══╝╚══╝ ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   {Colors.RESET}
-{Colors.DIM}                                                                        {Colors.RESET}
-{Colors.CYAN}   ██╗███╗   ██╗███████╗████████╗███████╗███╗   ███╗                    {Colors.RESET}
-{Colors.CYAN}   ██║████╗  ██║██╔════╝╚══██╔══╝██╔════╝████╗ ████║                    {Colors.RESET}
-{Colors.CYAN}   ██║██╔██╗ ██║█████╗     ██║   █████╗  ██╔████╔██║                    {Colors.RESET}
-{Colors.CYAN}   ██║██║╚██╗██║╚════██╗   ██║   ██╔══╝  ██║╚██╔╝██║                    {Colors.RESET}
-{Colors.CYAN}   ██║██║ ╚████║███████║   ██║   ███████╗██║ ╚═╝ ██║                    {Colors.RESET}
-{Colors.CYAN}   ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝                    {Colors.RESET}
-{Colors.DIM}                                                                        {Colors.RESET}
-{Colors.DIM}       ⚡  {BRAND_TAGLINE}  ⚡        {Colors.RESET}
+███████╗██╗    ██╗██╗███████╗████████╗    ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗     
+██╔════╝██║    ██║██║██╔════╝╚══██╔══╝    ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║     
+███████╗██║ █╗ ██║██║█████╗     ██║       ██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║     
+╚════██║██║███╗██║██║██╔══╝     ██║       ██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║     
+███████║╚███╔███╔╝██║██║        ██║       ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+╚══════╝ ╚══╝╚══╝ ╚═╝╚═╝        ╚═╝       ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
 """
 
 # =============================================================================
