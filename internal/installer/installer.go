@@ -51,7 +51,6 @@ type Installer interface {
 
 // BaseInstaller 基础安装器
 type BaseInstaller struct {
-	_ sync.RWMutex
 }
 
 // WindowsInstaller Windows 安装器

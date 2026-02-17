@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 
@@ -44,7 +45,12 @@ var rootCmd = &cobra.Command{
 		// 询问是否启动交互式菜单
 		fmt.Print(ui.InfoStyle.Render("Launch interactive menu? [Y/n]: "))
 		var response string
-		_, _ = fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			// 输入错误时默认启动交互式菜单
+			log.Printf("Warning: failed to read user input: %v", err)
+			runInteractiveTUI()
+			return
+		}
 		if response == "" || response == "y" || response == "Y" {
 			runInteractiveTUI()
 		}

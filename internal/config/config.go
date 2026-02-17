@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -94,7 +95,9 @@ func (c *Config) load() {
 
 	// 确保配置目录存在
 	configDir := filepath.Dir(c.configFile)
-	_ = os.MkdirAll(configDir, 0755)
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		log.Printf("Warning: failed to create config directory: %v", err)
+	}
 
 	// 检查配置文件是否存在
 	if _, err := os.Stat(c.configFile); os.IsNotExist(err) {
@@ -125,7 +128,9 @@ func (c *Config) getDefaultConfigPath() string {
 // createDefaultConfig 创建默认配置
 func (c *Config) createDefaultConfig() {
 	c.software = c.getDefaultSoftware()
-	_ = c.save()
+	if err := c.save(); err != nil {
+		log.Printf("Warning: failed to save default config: %v", err)
+	}
 }
 
 // getDefaultSoftware 获取默认软件列表

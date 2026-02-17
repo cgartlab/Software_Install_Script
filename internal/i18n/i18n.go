@@ -77,6 +77,9 @@ var (
 			"common_done":           "完成",
 			"common_error":          "错误",
 			"common_warning":        "警告",
+			
+			// Config errors
+			"config_save_error":     "保存配置失败",
 			"common_info":           "信息",
 			"common_navigation":     "导航",
 			"common_up":             "上",
@@ -194,6 +197,9 @@ var (
 			"common_done":           "Done",
 			"common_error":          "Error",
 			"common_warning":        "Warning",
+			
+			// Config errors
+			"config_save_error":     "Failed to save config",
 			"common_info":           "Info",
 			"common_navigation":     "Navigation",
 			"common_up":             "up",

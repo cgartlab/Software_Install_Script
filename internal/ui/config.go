@@ -2,31 +2,33 @@ package ui
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	"swiftinstall/internal/config"
+	"swiftinstall/internal/i18n"
+	"swiftinstall/internal/installer"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"swiftinstall/internal/config"
-	"swiftinstall/internal/i18n"
-	"swiftinstall/internal/installer"
 )
 
 // ConfigModel 配置管理模型
 type ConfigModel struct {
-	mode         string // "list", "add", "edit", "remove"
-	table        table.Model
-	inputs       []textinput.Model
-	focusIndex   int
-	packages     []config.Software
-	selected     int
-	quitting     bool
-	width        int
-	height       int
-	message      string
-	messageType  string // "success", "error", "info"
+	mode        string // "list", "add", "edit", "remove"
+	table       table.Model
+	inputs      []textinput.Model
+	focusIndex  int
+	packages    []config.Software
+	selected    int
+	quitting    bool
+	width       int
+	height      int
+	message     string
+	messageType string // "success", "error", "info"
 }
 
 // NewConfigModel 创建配置管理模型
@@ -76,7 +78,7 @@ func NewConfigModel() ConfigModel {
 
 	// 创建输入框
 	inputs := make([]textinput.Model, 3)
-	
+
 	inputs[0] = textinput.New()
 	inputs[0].Placeholder = i18n.T("config_name")
 	inputs[0].Focus()
@@ -265,7 +267,12 @@ func (m *ConfigModel) savePackage() {
 		ID:       id,
 		Category: category,
 	})
-	_ = config.Save()
+	if err := config.Save(); err != nil {
+		log.Printf("Error: failed to save config after adding package: %v", err)
+		m.message = fmt.Sprintf("%s: %v", i18n.T("config_save_error"), err)
+		m.messageType = "error"
+		return
+	}
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -294,7 +301,12 @@ func (m *ConfigModel) updatePackage() {
 		ID:       id,
 		Category: category,
 	})
-	_ = config.Save()
+	if err := config.Save(); err != nil {
+		log.Printf("Error: failed to save config after updating package: %v", err)
+		m.message = fmt.Sprintf("%s: %v", i18n.T("config_save_error"), err)
+		m.messageType = "error"
+		return
+	}
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -315,7 +327,12 @@ func (m *ConfigModel) deletePackage() {
 	name := m.packages[m.selected].Name
 	cfg := config.Get()
 	cfg.RemoveSoftware(m.selected)
-	_ = config.Save()
+	if err := config.Save(); err != nil {
+		log.Printf("Error: failed to save config after removing package: %v", err)
+		m.message = fmt.Sprintf("%s: %v", i18n.T("config_save_error"), err)
+		m.messageType = "error"
+		return
+	}
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -383,10 +400,10 @@ func (m ConfigModel) View() string {
 		// 帮助
 		b.WriteString("\n")
 		b.WriteString(HelpStyle.Render(
-			i18n.T("config_add")+" a | "+
-			i18n.T("config_edit")+" e | "+
-			i18n.T("config_remove")+" d/r | "+
-			i18n.T("common_cancel")+" q",
+			i18n.T("config_add") + " a | " +
+				i18n.T("config_edit") + " e | " +
+				i18n.T("config_remove") + " d/r | " +
+				i18n.T("common_cancel") + " q",
 		))
 
 	case "add":
@@ -488,9 +505,11 @@ func RunWizard() {
 	fmt.Print("\nEnter choice (1-2): ")
 
 	var choice string
-	_, _ = fmt.Scanln(&choice)
-
-	if choice == "1" {
+	if _, err := fmt.Scanln(&choice); err != nil {
+		log.Printf("Warning: failed to read language choice: %v", err)
+		// 默认使用中文
+		i18n.SetLanguage("zh")
+	} else if choice == "1" {
 		i18n.SetLanguage("en")
 	} else {
 		i18n.SetLanguage("zh")
@@ -526,7 +545,7 @@ func RunExport(packages []config.Software, format, output string) {
 	}
 
 	cfg := config.Get()
-	
+
 	if output != "" {
 		err := cfg.ExportToFile(output)
 		if err != nil {
@@ -552,7 +571,7 @@ func RunUpdateCheck() {
 	fmt.Println(TitleStyle.Render(i18n.T("cmd_update_short")))
 	fmt.Println()
 	fmt.Println(InfoStyle.Render("Checking for updates..."))
-	
+
 	// 这里可以实现实际的更新检查逻辑
 	fmt.Println()
 	fmt.Println(SuccessStyle.Render("✓ You are using the latest version!"))
@@ -563,7 +582,7 @@ func RunClean() {
 	fmt.Println(TitleStyle.Render(i18n.T("cmd_clean_short")))
 	fmt.Println()
 	fmt.Println(InfoStyle.Render("Cleaning cache..."))
-	
+
 	// 这里可以实现实际的清理逻辑
 	fmt.Println()
 	fmt.Println(SuccessStyle.Render("✓ Cache cleaned successfully!"))
@@ -576,7 +595,7 @@ func RunStatus() {
 
 	// 平台信息
 	pm, available := installer.CheckPackageManager()
-	
+
 	fmt.Println(InfoStyle.Render(i18n.T("status_platform") + ":"))
 	fmt.Printf("  OS: %s\n", getOSName())
 	fmt.Printf("  Arch: %s\n", getArch())
