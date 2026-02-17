@@ -4,12 +4,13 @@
 param(
     [string]$Version = "latest",
     [string]$InstallDir = "$env:LOCALAPPDATA\SwiftInstall",
-    [switch]$AddToPath = $true
+    [switch]$AddToPath = $true,
+    [switch]$SkipMirrorTest,
+    [string]$Mirror = ""
 )
 
 $ErrorActionPreference = "Stop"
 
-# 颜色输出函数
 function Write-ColorOutput {
     param(
         [string]$Message,
@@ -21,29 +22,15 @@ function Write-ColorOutput {
 # Logo
 function Show-Logo {
     Write-ColorOutput @"
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║   ███████╗██╗    ██╗██╗████████╗██╗  ██╗██╗███╗   ██╗███████╗████████╗       ║
-║   ██╔════╝██║    ██║██║╚══██╔══╝██║  ██║██║████╗  ██║██╔════╝╚══██╔══╝       ║
-║   ███████╗██║ █╗ ██║██║   ██║   ███████║██║██╔██╗ ██║█████╗     ██║          ║
-║   ╚════██║██║███╗██║██║   ██║   ██╔══██║██║██║╚██╗██║██╔══╝     ██║          ║
-║   ███████║╚███╔███╔╝██║   ██║   ██║  ██║██║██║ ╚████║███████╗   ██║          ║
-║   ╚══════╝ ╚══╝╚══╝ ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝          ║
-║                                                                              ║
-║   ██╗███╗   ██╗███████╗████████╗███████╗███╗   ███╗                          ║
-║   ██║████╗  ██║██╔════╝╚══██╔══╝██╔════╝████╗ ████║                          ║
-║   ██║██╔██╗ ██║█████╗     ██║   █████╗  ██╔████╔██║                          ║
-║   ██║██║╚██╗██║██╔══╝     ██║   ██╔══╝  ██║╚██╔╝██║                          ║
-║   ██║██║ ╚████║███████║   ██║   ███████╗██║ ╚═╝ ██║                          ║
-║   ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝                          ║
-║                                                                              ║
-║              ⚡  Fast • Simple • Reliable • Cross-Platform  ⚡                ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+███████╗██╗    ██╗██╗███████╗████████╗    ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗     
+██╔════╝██║    ██║██║██╔════╝╚══██╔══╝    ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║     
+███████╗██║ █╗ ██║██║█████╗     ██║       ██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║     
+╚════██║██║███╗██║██║██╔══╝     ██║       ██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║     
+███████║╚███╔███╔╝██║██║        ██║       ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+╚══════╝ ╚══╝╚══╝ ╚═╝╚═╝        ╚═╝       ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
 "@ -Color Cyan
 }
 
-# 检测系统架构
 function Get-Architecture {
     $arch = $env:PROCESSOR_ARCHITECTURE
     switch ($arch) {
@@ -53,7 +40,6 @@ function Get-Architecture {
     }
 }
 
-# 下载文件
 function Download-File {
     param(
         [string]$Url,
@@ -62,19 +48,139 @@ function Download-File {
     
     Write-ColorOutput "Downloading from $Url..." -Color Yellow
     
+    $webClient = New-Object System.Net.WebClient
+    
+    $global:DownloadCompleted = $false
+    $global:DownloadProgress = 0
+    $script:downloadStartTime = $null
+    
+    $progressAction = {
+        if ($null -eq $script:downloadStartTime) {
+            $script:downloadStartTime = Get-Date
+        }
+        
+        $elapsed = (Get-Date) - $script:downloadStartTime
+        $elapsedSeconds = $elapsed.TotalSeconds
+        
+        if ($elapsedSeconds -gt 0 -and $EventArgs.BytesReceived -gt 0) {
+            $speed = $EventArgs.BytesReceived / $elapsedSeconds
+            $speedMB = $speed / 1MB
+            
+            $barWidth = 30
+            $progress = [math]::Min($EventArgs.ProgressPercentage, 100)
+            $filled = [math]::Floor($barWidth * $progress / 100)
+            $empty = $barWidth - $filled
+            
+            $progressBar = "[" + ("=" * $filled) + (" " * $empty) + "]"
+            
+            $receivedMB = [math]::Round($EventArgs.BytesReceived / 1MB, 2)
+            $totalMB = if ($EventArgs.TotalBytesToReceive -gt 0) { [math]::Round($EventArgs.TotalBytesToReceive / 1MB, 2) } else { "?" }
+            
+            $eta = if ($speed -gt 0 -and $EventArgs.TotalBytesToReceive -gt $EventArgs.BytesReceived) {
+                $remainingBytes = $EventArgs.TotalBytesToReceive - $EventArgs.BytesReceived
+                $etaSeconds = [math]::Round($remainingBytes / $speed)
+                if ($etaSeconds -ge 60) {
+                    "{0}m{1}s" -f [math]::Floor($etaSeconds / 60), ($etaSeconds % 60)
+                } else {
+                    "${etaSeconds}s"
+                }
+            } else { "..." }
+            
+            $statusLine = "`r$progressBar ${progress}% | $receivedMB/$totalMB MB | {0:N2} MB/s | ETA: {1}" -f $speedMB, $eta
+            
+            Write-Host $statusLine -NoNewline -ForegroundColor Cyan
+        }
+    }
+    
+    $completedAction = {
+        $global:DownloadCompleted = $true
+    }
+    
+    Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -SourceIdentifier WebClient.DownloadProgress -Action $progressAction | Out-Null
+    Register-ObjectEvent -InputObject $webClient -EventName DownloadFileCompleted -SourceIdentifier WebClient.DownloadCompleted -Action $completedAction | Out-Null
+    
     try {
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri $Url -OutFile $OutputPath -UseBasicParsing
-        $ProgressPreference = 'Continue'
-        Write-ColorOutput "Download completed!" -Color Green
+        $webClient.DownloadFileAsync($Url, $OutputPath)
+        
+        while (-not $global:DownloadCompleted) {
+            Start-Sleep -Milliseconds 100
+        }
+        
+        Write-Host ""
+        
+        if (Test-Path $OutputPath) {
+            $fileSize = (Get-Item $OutputPath).Length
+            if ($fileSize -eq 0) {
+                Write-ColorOutput "Download failed: File is empty" -Color Red
+                exit 1
+            }
+            Write-ColorOutput "Download completed! ($([math]::Round($fileSize/1MB, 2)) MB)" -Color Green
+        } else {
+            Write-ColorOutput "Download failed: File not created" -Color Red
+            exit 1
+        }
     }
     catch {
+        Write-Host ""
         Write-ColorOutput "Download failed: $_" -Color Red
         exit 1
     }
+    finally {
+        Unregister-Event -SourceIdentifier WebClient.DownloadProgress -ErrorAction SilentlyContinue
+        Unregister-Event -SourceIdentifier WebClient.DownloadCompleted -ErrorAction SilentlyContinue
+        $webClient.Dispose()
+    }
 }
 
-# 添加到 PATH
+function Get-FastDownloadUrl {
+    param([string]$OriginalUrl)
+    
+    $mirrorUrls = @(
+        @{ Name = "Direct"; Url = $OriginalUrl },
+        @{ Name = "ghproxy.net"; Url = $OriginalUrl -replace 'https://github.com/', 'https://ghproxy.net/https://github.com/' },
+        @{ Name = "mirror.ghproxy.com"; Url = $OriginalUrl -replace 'https://github.com/', 'https://mirror.ghproxy.com/' },
+        @{ Name = "gh-proxy.com"; Url = $OriginalUrl -replace 'https://github.com/', 'https://gh-proxy.com/' }
+    )
+    
+    Write-ColorOutput "`nTesting download mirrors..." -Color Yellow
+    
+    $fastestMirror = $null
+    $fastestTime = [double]::MaxValue
+    
+    foreach ($mirror in $mirrorUrls) {
+        try {
+            $testUrl = $mirror.Url
+            $request = [System.Net.WebRequest]::Create($testUrl)
+            $request.Method = "HEAD"
+            $request.Timeout = 5000
+            
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            $response = $request.GetResponse()
+            $sw.Stop()
+            
+            $response.Close()
+            
+            $responseTime = $sw.ElapsedMilliseconds
+            Write-ColorOutput "  [$($mirror.Name)] Response time: ${responseTime}ms" -Color Gray
+            
+            if ($responseTime -lt $fastestTime) {
+                $fastestTime = $responseTime
+                $fastestMirror = $mirror
+            }
+        }
+        catch {
+            Write-ColorOutput "  [$($mirror.Name)] Not available" -Color DarkGray
+        }
+    }
+    
+    if ($fastestMirror) {
+        Write-ColorOutput "`nUsing fastest mirror: [$($fastestMirror.Name)]" -Color Green
+        return $fastestMirror.Url
+    }
+    
+    return $OriginalUrl
+}
+
 function Add-ToPath {
     param([string]$Directory)
     
@@ -89,31 +195,26 @@ function Add-ToPath {
     }
 }
 
-# 主安装流程
 function Install-SwiftInstall {
     Show-Logo
     
-    Write-ColorOutput "`nStarting SwiftInstall installation..." -Color Cyan
+    Write-ColorOutput "Starting SwiftInstall installation..." -Color Cyan
     Write-ColorOutput "Version: $Version" -Color Gray
     Write-ColorOutput "Install Directory: $InstallDir" -Color Gray
-    Write-ColorOutput "`n"
+    Write-ColorOutput ""
     
-    # 创建安装目录
     if (!(Test-Path $InstallDir)) {
         New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
         Write-ColorOutput "Created directory: $InstallDir" -Color Green
     }
     
-    # 检测架构
     $arch = Get-Architecture
     Write-ColorOutput "Detected architecture: $arch" -Color Gray
     
-    # 构建下载 URL - 使用 GitHub Releases
     $repoOwner = "cgartlab"
     $repoName = "SwiftInstall"
     
     if ($Version -eq "latest") {
-        # 获取最新版本号
         try {
             $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoOwner/$repoName/releases/latest" -UseBasicParsing
             $Version = $releaseInfo.tag_name
@@ -127,21 +228,35 @@ function Install-SwiftInstall {
     
     $downloadUrl = "https://github.com/$repoOwner/$repoName/releases/download/$Version/sis-windows-$arch.exe"
     
-    # 下载文件
-    $outputFile = "$InstallDir\sis.exe"
-    Download-File -Url $downloadUrl -OutputPath $outputFile
+    if ($Mirror -ne "") {
+        $fastUrl = switch ($Mirror.ToLower()) {
+            "ghproxy" { $downloadUrl -replace 'https://github.com/', 'https://ghproxy.net/https://github.com/' }
+            "mirror" { $downloadUrl -replace 'https://github.com/', 'https://mirror.ghproxy.com/' }
+            "gh-proxy" { $downloadUrl -replace 'https://github.com/', 'https://gh-proxy.com/' }
+            default { $downloadUrl }
+        }
+        Write-ColorOutput "Using specified mirror: $Mirror" -Color Yellow
+    }
+    elseif ($SkipMirrorTest.IsPresent) {
+        $fastUrl = $downloadUrl
+        Write-ColorOutput "Skipping mirror test, using direct download" -Color Gray
+    }
+    else {
+        $fastUrl = Get-FastDownloadUrl -OriginalUrl $downloadUrl
+    }
     
-    # 验证下载
+    $outputFile = "$InstallDir\sis.exe"
+    Download-File -Url $fastUrl -OutputPath $outputFile
+    
     if (Test-Path $outputFile) {
         $fileSize = (Get-Item $outputFile).Length
         Write-ColorOutput "File size: $([math]::Round($fileSize/1MB, 2)) MB" -Color Gray
         
-        # 测试运行
         Write-ColorOutput "`nVerifying installation..." -Color Yellow
         try {
-            $version = & $outputFile version 2>&1
+            $versionOutput = & $outputFile version 2>&1
             Write-ColorOutput "Installation successful!" -Color Green
-            Write-ColorOutput "`n$version" -Color Cyan
+            Write-ColorOutput "$versionOutput" -Color Cyan
         }
         catch {
             Write-ColorOutput "Warning: Could not verify installation" -Color Yellow
@@ -152,13 +267,11 @@ function Install-SwiftInstall {
         exit 1
     }
     
-    # 添加到 PATH
     if ($AddToPath) {
         Write-ColorOutput "`nAdding to PATH..." -Color Yellow
         Add-ToPath -Directory $InstallDir
     }
     
-    # 完成
     Write-ColorOutput "`n========================================" -Color Green
     Write-ColorOutput "Installation Complete!" -Color Green
     Write-ColorOutput "========================================" -Color Green
@@ -170,5 +283,4 @@ function Install-SwiftInstall {
     Write-ColorOutput "`nFor more information: https://cgartlab.com/SwiftInstall" -Color Gray
 }
 
-# 运行安装
 Install-SwiftInstall

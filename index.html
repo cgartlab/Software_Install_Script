@@ -4,121 +4,425 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwiftInstall - 快速、简单、可靠的跨平台软件安装工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #f7f5f2;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #efeeec;
+            --bg-hover: rgba(29, 155, 240, 0.08);
+            --text-primary: #0f1419;
+            --text-secondary: #536471;
+            --text-tertiary: #6e7781;
+            --border-primary: #e1e4e8;
+            --border-secondary: #eff3f4;
+            --accent-primary: #1d9bf0;
+            --accent-hover: #1a8cd8;
+            --accent-light: rgba(29, 155, 240, 0.1);
+            --success: #00ba7c;
+            --success-light: rgba(0, 186, 124, 0.1);
+            --code-bg: #0f1419;
+            --code-text: #10b981;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
+            --transition-slow: 0.4s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #000000;
+                --bg-secondary: #16181c;
+                --bg-tertiary: #202327;
+                --bg-hover: rgba(255, 255, 255, 0.04);
+                --text-primary: #e7e9ea;
+                --text-secondary: #8b98a5;
+                --text-tertiary: #71767b;
+                --border-primary: #2f3336;
+                --border-secondary: #22272a;
+                --accent-primary: #1d9bf0;
+                --accent-hover: #1d9bf0;
+                --accent-light: rgba(29, 155, 240, 0.15);
+                --success-light: rgba(0, 186, 124, 0.15);
+                --code-bg: #0d1117;
+                --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+                --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+            }
+
+            .bg-glow-1 {
+                background: radial-gradient(circle, rgba(30, 58, 138, 0.4) 0%, transparent 70%);
+            }
+
+            .bg-glow-2 {
+                background: radial-gradient(circle, rgba(88, 28, 135, 0.35) 0%, transparent 70%);
+            }
+
+            .bg-glow-3 {
+                background: radial-gradient(circle, rgba(22, 101, 52, 0.35) 0%, transparent 70%);
+            }
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: #f8fafc;
-            line-height: 1.6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-glow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.5;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        .bg-glow-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.5) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 0s;
+        }
+
+        .bg-glow-2 {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(88, 28, 135, 0.4) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateX(-80px);
+            animation-delay: 1.3s;
+        }
+
+        .bg-glow-3 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(22, 101, 52, 0.4) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateX(100px);
+            animation-delay: 2.6s;
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.6;
+            }
+        }
+
+        .bg-glow-2 {
+            animation-name: breathe-2;
+        }
+
+        .bg-glow-3 {
+            animation-name: breathe-3;
+        }
+
+        @keyframes breathe-2 {
+            0%, 100% {
+                transform: translate(-50%, -50%) translateX(-80px) scale(1);
+                opacity: 0.35;
+            }
+            50% {
+                transform: translate(-50%, -50%) translateX(-80px) scale(1.15);
+                opacity: 0.55;
+            }
+        }
+
+        @keyframes breathe-3 {
+            0%, 100% {
+                transform: translate(-50%, -50%) translateX(100px) scale(1);
+                opacity: 0.35;
+            }
+            50% {
+                transform: translate(-50%, -50%) translateX(100px) scale(1.15);
+                opacity: 0.55;
+            }
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 720px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Header */
         header {
-            padding: 60px 0;
-            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(247, 245, 242, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-secondary);
+            padding: 16px 0;
+            transition: background var(--transition-normal);
         }
 
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
+        @media (prefers-color-scheme: dark) {
+            header {
+                background: rgba(0, 0, 0, 0.85);
+            }
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        h1 {
-            font-size: 3rem;
+        .site-title {
+            font-size: 1.25rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            transition: color var(--transition-fast);
         }
 
-        .tagline {
-            font-size: 1.5rem;
-            color: #94a3b8;
-            margin-bottom: 40px;
+        .site-title:hover {
+            color: var(--accent-primary);
         }
 
-        .badges {
+        .header-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-xl);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--accent-primary);
+        }
+
+        main {
+            padding: 100px 0 140px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .article-header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .article-title {
+            font-size: clamp(2rem, 5vw, 2.75rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.04em;
+            line-height: 1.15;
+            margin-top: 8px;
+        }
+
+        .article-subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .article-tags {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .badge {
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid #6366f1;
+        .tag {
+            display: inline-flex;
+            align-items: center;
             padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: #818cf8;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border-radius: var(--radius-xl);
+            font-size: 0.825rem;
+            font-weight: 500;
+            border: 1px solid var(--border-primary);
+            transition: all var(--transition-fast);
+            letter-spacing: 0.01em;
         }
 
-        /* Installation Section */
-        .install-section {
-            background: rgba(30, 41, 59, 0.8);
-            border-radius: 20px;
-            padding: 40px;
-            margin: 40px 0;
-            border: 1px solid rgba(99, 102, 241, 0.3);
+        .tag:hover {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
         }
 
-        .install-section h2 {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            text-align: center;
-            color: #818cf8;
+        .article-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: 56px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-secondary);
+            animation: fadeInUp 0.6s ease 0.1s backwards;
+        }
+
+        .article-content h2 {
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 48px 0 24px;
+            letter-spacing: -0.025em;
+            position: relative;
+            padding-left: 18px;
+            line-height: 1.3;
+        }
+
+        .article-content h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 28px;
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .article-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .article-content p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: clamp(0.95rem, 2vw, 1.025rem);
+            line-height: 1.85;
+            letter-spacing: 0.01em;
+        }
+
+        .code-section {
+            margin: 24px 0;
         }
 
         .platform-tabs {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 4px;
+            margin-bottom: 12px;
+            background: var(--bg-tertiary);
+            padding: 4px;
+            border-radius: var(--radius-md);
         }
 
         .tab-btn {
+            flex: 1;
             background: transparent;
-            border: 2px solid #6366f1;
-            color: #f8fafc;
-            padding: 12px 30px;
-            border-radius: 8px;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all var(--transition-fast);
         }
 
-        .tab-btn:hover,
+        .tab-btn:hover:not(.active) {
+            background: var(--bg-hover);
+        }
+
         .tab-btn.active {
-            background: #6366f1;
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .code-block {
-            background: #0f172a;
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--code-bg);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
             position: relative;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .code-block::before {
@@ -127,388 +431,566 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #6366f1, #818cf8);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.5;
         }
 
         .code-block code {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            color: #10b981;
-            font-size: 0.95rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            color: var(--code-text);
+            font-size: 0.875rem;
+            display: block;
+            padding-right: 80px;
+            word-break: break-all;
         }
 
         .copy-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid #6366f1;
-            color: #f8fafc;
-            padding: 5px 15px;
-            border-radius: 5px;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all var(--transition-fast);
         }
 
         .copy-btn:hover {
-            background: #6366f1;
+            background: var(--accent-primary);
+            color: #fff;
+            border-color: var(--accent-primary);
         }
 
-        /* Features Section */
-        .features {
-            padding: 60px 0;
+        .copy-btn.copied {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
         }
 
-        .features h2 {
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 50px;
-            color: #818cf8;
-        }
-
-        .feature-grid {
+        .feature-list {
+            list-style: none;
+            padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            gap: 4px;
         }
 
-        .feature-card {
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 16px;
-            padding: 30px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            transition: all 0.3s ease;
+        .feature-list li {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: background var(--transition-fast);
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: #6366f1;
-            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+        .feature-list li:hover {
+            background: var(--bg-hover);
         }
 
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: 1.375rem;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
         }
 
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #f8fafc;
+        .feature-text h4 {
+            font-size: clamp(0.975rem, 2vw, 1.025rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.015em;
+            line-height: 1.3;
         }
 
-        .feature-card p {
-            color: #94a3b8;
-            line-height: 1.8;
+        .feature-text p {
+            font-size: clamp(0.875rem, 1.8vw, 0.925rem);
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.7;
+            letter-spacing: 0.005em;
         }
 
-        /* Demo Section */
-        .demo-section {
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .demo-section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 40px;
-            color: #818cf8;
-        }
-
-        .terminal {
-            background: #0f172a;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: left;
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        .terminal-demo {
+            background: var(--code-bg);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin: 24px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .terminal-header {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .terminal-btn {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
+            transition: transform var(--transition-fast);
         }
 
-        .terminal-btn.red { background: #ef4444; }
-        .terminal-btn.yellow { background: #f59e0b; }
-        .terminal-btn.green { background: #10b981; }
-
-        .terminal-content {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
+        .terminal-demo:hover .terminal-btn {
+            transform: scale(1.2);
         }
+
+        .terminal-btn.red { background: #ff5f57; }
+        .terminal-btn.yellow { background: #febc2e; }
+        .terminal-btn.green { background: #28c840; }
 
         .terminal-line {
-            margin: 5px 0;
+            margin: 2px 0;
+            line-height: 1.7;
         }
 
         .terminal-prompt {
-            color: #6366f1;
+            color: var(--accent-primary);
+            font-weight: 500;
         }
 
         .terminal-command {
-            color: #f8fafc;
+            color: #e6edf3;
         }
 
         .terminal-output {
-            color: #94a3b8;
+            color: #7d8590;
         }
 
         .terminal-success {
-            color: #10b981;
+            color: var(--success);
+            font-weight: 500;
         }
 
-        /* Tech Stack */
+        .terminal-progress {
+            color: #f0883e;
+        }
+
         .tech-stack {
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .tech-stack h2 {
-            font-size: 2.5rem;
-            margin-bottom: 40px;
-            color: #818cf8;
-        }
-
-        .tech-grid {
             display: flex;
-            justify-content: center;
-            gap: 30px;
+            gap: 10px;
             flex-wrap: wrap;
+            margin-top: 16px;
         }
 
         .tech-item {
-            background: rgba(30, 41, 59, 0.6);
-            padding: 20px 40px;
-            border-radius: 12px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: var(--bg-tertiary);
+            padding: 10px 18px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .tech-item:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
         }
 
         .tech-item a {
-            color: #818cf8;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: color var(--transition-fast);
+        }
+
+        .tech-item:hover a {
+            color: var(--accent-primary);
+        }
+
+        blockquote {
+            background: var(--accent-light);
+            border-left: 3px solid var(--accent-primary);
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+
+        blockquote p {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .article-footer {
+            text-align: center;
+            padding: 64px 0 0;
+            margin-top: 80px;
+            border-top: 1px solid var(--border-secondary);
+            animation: fadeInUp 0.6s ease 0.2s backwards;
+        }
+
+        .footer-author {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .footer-author a {
+            color: var(--text-primary);
             text-decoration: none;
             font-weight: 600;
+            transition: color var(--transition-fast);
         }
 
-        .tech-item a:hover {
-            color: #6366f1;
+        .footer-author a:hover {
+            color: var(--accent-primary);
         }
 
-        /* Footer */
-        footer {
-            padding: 40px 0;
-            text-align: center;
-            border-top: 1px solid rgba(99, 102, 241, 0.2);
-            margin-top: 60px;
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
         }
 
-        footer p {
-            color: #64748b;
-        }
-
-        footer a {
-            color: #818cf8;
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
             text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-primary);
+            transition: all var(--transition-fast);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+        .footer-link:hover {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
             }
 
-            .tagline {
-                font-size: 1.1rem;
+            main {
+                padding: 72px 0 100px;
+                min-height: calc(100vh - 180px);
+            }
+
+            .article-header {
+                margin-bottom: 36px;
+            }
+
+            .article-title {
+                font-size: clamp(1.75rem, 6vw, 2rem);
+            }
+
+            .article-content {
+                padding: 32px;
+                border-radius: var(--radius-lg);
+            }
+
+            .article-content h2 {
+                font-size: clamp(1.15rem, 4vw, 1.25rem);
+                margin: 40px 0 20px;
+            }
+
+            .article-content p {
+                font-size: clamp(0.9rem, 2.5vw, 0.975rem);
+                line-height: 1.8;
+                margin-bottom: 20px;
             }
 
             .platform-tabs {
                 flex-direction: column;
             }
 
-            .feature-grid {
-                grid-template-columns: 1fr;
+            .tab-btn {
+                width: 100%;
+            }
+
+            .feature-list li {
+                padding: 14px;
+            }
+
+            .feature-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.25rem;
+            }
+
+            .article-footer {
+                padding: 48px 0 0;
+                margin-top: 56px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+            }
+
+            .footer-link {
+                justify-content: center;
+            }
+
+            .bg-glow {
+                filter: blur(80px);
+            }
+
+            .bg-glow-1 {
+                width: 400px;
+                height: 400px;
+            }
+
+            .bg-glow-2 {
+                width: 450px;
+                height: 450px;
+            }
+
+            .bg-glow-3 {
+                width: 380px;
+                height: 380px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .bg-glow {
+                animation: none !important;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div class="logo">⚡</div>
-            <h1>SwiftInstall</h1>
-            <p class="tagline">快速、简单、可靠的跨平台软件安装工具</p>
-            <div class="badges">
-                <span class="badge">🎨 精美 TUI</span>
-                <span class="badge">🚀 极速安装</span>
-                <span class="badge">📦 跨平台</span>
-                <span class="badge">💾 单文件</span>
-            </div>
-        </header>
+    <div class="bg-glow-container">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        <div class="bg-glow bg-glow-3"></div>
+    </div>
+    <header>
+        <div class="container header-inner">
+            <a href="https://cgartlab.com" class="site-title">CGArtLab</a>
+            <nav class="header-nav">
+                <a href="https://github.com/yourusername/swiftinstall" class="nav-link" target="_blank">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </nav>
+        </div>
+    </header>
 
-        <!-- Installation -->
-        <section class="install-section">
-            <h2>🚀 一键安装</h2>
-            <div class="platform-tabs">
-                <button class="tab-btn active" onclick="showTab('windows')">Windows</button>
-                <button class="tab-btn" onclick="showTab('linux')">Linux</button>
-                <button class="tab-btn" onclick="showTab('macos')">macOS</button>
-            </div>
-
-            <div id="windows" class="tab-content">
-                <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
-                    <code>iex (irm https://cgartlab.com/SwiftInstall/install.ps1)</code>
-                </div>
-            </div>
-
-            <div id="linux" class="tab-content" style="display: none;">
-                <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
-                    <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
+    <main class="container">
+        <article>
+            <div class="article-header">
+                <h1 class="article-title">SwiftInstall</h1>
+                <p class="article-subtitle">快速、简单、可靠的跨平台软件安装工具</p>
+                <div class="article-tags">
+                    <span class="tag">Go</span>
+                    <span class="tag">CLI</span>
+                    <span class="tag">跨平台</span>
+                    <span class="tag">开源</span>
                 </div>
             </div>
 
-            <div id="macos" class="tab-content" style="display: none;">
-                <div class="code-block">
-                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
-                    <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
-                </div>
-            </div>
-        </section>
+            <div class="article-content">
+                <h2>项目简介</h2>
+                <p>SwiftInstall 是一个基于 Go 语言开发的跨平台软件包管理工具，旨在简化软件安装流程。它支持 Windows (Winget)、macOS (Homebrew) 和 Linux 多个平台，提供统一的命令行界面和精美的 TUI 交互体验。</p>
 
-        <!-- Features -->
-        <section class="features">
-            <h2>✨ 特性</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>精美的 TUI 界面</h3>
-                    <p>基于 Bubble Tea 的现代化终端交互体验，支持箭头键导航，操作流畅自然。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3>极速安装</h3>
-                    <p>支持并行安装多个软件包，大幅提升软件部署效率，节省时间。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3>智能搜索</h3>
-                    <p>内置软件包搜索功能，快速找到所需软件，支持模糊匹配。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚙️</div>
-                    <h3>配置管理</h3>
-                    <p>交互式配置文件管理，轻松增删软件包，支持导入导出配置。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3>跨平台支持</h3>
-                    <p>支持 Windows (Winget)、macOS (Homebrew) 和 Linux，一套工具走遍天下。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💾</div>
-                    <h3>单二进制文件</h3>
+                <blockquote>
                     <p>使用 Go 语言编写，编译为单二进制文件，无需依赖，随处运行。</p>
-                </div>
-            </div>
-        </section>
+                </blockquote>
 
-        <!-- Demo -->
-        <section class="demo-section">
-            <h2>🖥️ 界面预览</h2>
-            <div class="terminal">
-                <div class="terminal-header">
-                    <div class="terminal-btn red"></div>
-                    <div class="terminal-btn yellow"></div>
-                    <div class="terminal-btn green"></div>
+                <h2>安装方式</h2>
+                <div class="code-section">
+                    <div class="platform-tabs">
+                        <button class="tab-btn active" onclick="showTab('windows')">Windows</button>
+                        <button class="tab-btn" onclick="showTab('macos')">macOS</button>
+                    </div>
+
+                    <div id="windows" class="tab-content active">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>iex (irm https://cgartlab.com/SwiftInstall/install.ps1)</code>
+                        </div>
+                    </div>
+
+                    <div id="macos" class="tab-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
+                        </div>
+                    </div>
                 </div>
-                <div class="terminal-content">
+
+                <h2>主要特性</h2>
+                <ul class="feature-list">
+                    <li>
+                        <span class="feature-icon">🎨</span>
+                        <div class="feature-text">
+                            <h4>精美的 TUI 界面</h4>
+                            <p>基于 Bubble Tea 的现代化终端交互体验，支持箭头键导航，操作流畅自然。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feature-icon">🚀</span>
+                        <div class="feature-text">
+                            <h4>极速安装</h4>
+                            <p>支持并行安装多个软件包，大幅提升软件部署效率，节省时间。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feature-icon">🔍</span>
+                        <div class="feature-text">
+                            <h4>智能搜索</h4>
+                            <p>内置软件包搜索功能，快速找到所需软件，支持模糊匹配。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feature-icon">⚙️</span>
+                        <div class="feature-text">
+                            <h4>配置管理</h4>
+                            <p>交互式配置文件管理，轻松增删软件包，支持导入导出配置。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feature-icon">🌐</span>
+                        <div class="feature-text">
+                            <h4>跨平台支持</h4>
+                            <p>支持 Windows (Winget)、macOS (Homebrew) 和 Linux，一套工具走遍天下。</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="feature-icon">💾</span>
+                        <div class="feature-text">
+                            <h4>单二进制文件</h4>
+                            <p>使用 Go 语言编写，编译为单二进制文件，无需依赖，随处运行。</p>
+                        </div>
+                    </li>
+                </ul>
+
+                <h2>界面预览</h2>
+                <div class="terminal-demo">
+                    <div class="terminal-header">
+                        <div class="terminal-btn red"></div>
+                        <div class="terminal-btn yellow"></div>
+                        <div class="terminal-btn green"></div>
+                    </div>
                     <div class="terminal-line">
                         <span class="terminal-prompt">$</span>
                         <span class="terminal-command"> sis install</span>
                     </div>
                     <div class="terminal-line terminal-output">
-                        <br>
-                        ⚡ 软件安装<br>
-                        <br>
-                        ████████████████████░░░░░ 75%<br>
-                        <br>
-                        安装中...<br>
-                        <br>
-                        Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status<br>
+                        <br>⚡ 软件安装<br>
+                        <br><span class="terminal-progress">████████████████████░░░░░ 75%</span><br>
+                        <br>安装中...<br>
+                        <br>Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status<br>
                         ─────────────────────────────────────────<br>
                         Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Git.Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
                         VS Code &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Microsoft.VSCode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
-                        7-Zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7zip.7zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;◉ 安装中<br>
+                        7-Zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7zip.7zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;◉ 安装中
+                    </div>
+                </div>
+
+                <h2>技术栈</h2>
+                <p>本项目基于以下优秀的开源技术构建：</p>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <a href="https://golang.org" target="_blank">Go</a>
+                    </div>
+                    <div class="tech-item">
+                        <a href="https://github.com/charmbracelet/bubbletea" target="_blank">Bubble Tea</a>
+                    </div>
+                    <div class="tech-item">
+                        <a href="https://github.com/charmbracelet/lipgloss" target="_blank">Lipgloss</a>
+                    </div>
+                    <div class="tech-item">
+                        <a href="https://github.com/spf13/cobra" target="_blank">Cobra</a>
                     </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <!-- Tech Stack -->
-        <section class="tech-stack">
-            <h2>🏗️ 技术栈</h2>
-            <div class="tech-grid">
-                <div class="tech-item">
-                    <a href="https://golang.org" target="_blank">Go</a>
-                </div>
-                <div class="tech-item">
-                    <a href="https://github.com/charmbracelet/bubbletea" target="_blank">Bubble Tea</a>
-                </div>
-                <div class="tech-item">
-                    <a href="https://github.com/charmbracelet/lipgloss" target="_blank">Lipgloss</a>
-                </div>
-                <div class="tech-item">
-                    <a href="https://github.com/spf13/cobra" target="_blank">Cobra</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <p>Made with ❤️ by <a href="https://cgartlab.com">CGArtLab</a></p>
-            <p style="margin-top: 10px;">
-                <a href="https://github.com/yourusername/swiftinstall">GitHub</a> •
-                <a href="https://cgartlab.com/SwiftInstall/docs">文档</a> •
-                <a href="https://github.com/yourusername/swiftinstall/releases">下载</a>
+        <footer class="article-footer">
+            <p class="footer-author">
+                Made with ❤️ by <a href="https://cgartlab.com">CGArtLab</a>
             </p>
+            <div class="footer-links">
+                <a href="https://github.com/yourusername/swiftinstall" class="footer-link" target="_blank">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+                <a href="https://cgartlab.com/SwiftInstall/docs" class="footer-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    文档
+                </a>
+                <a href="https://github.com/yourusername/swiftinstall/releases" class="footer-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    下载
+                </a>
+            </div>
         </footer>
-    </div>
+    </main>
 
     <script>
         function showTab(platform) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
+                tab.classList.remove('active');
             });
             
-            // Remove active class from all buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Show selected tab
-            document.getElementById(platform).style.display = 'block';
+            document.getElementById(platform).classList.add('active');
             event.target.classList.add('active');
         }
 
         function copyCode(btn) {
             const code = btn.nextElementSibling.innerText;
             navigator.clipboard.writeText(code).then(() => {
-                btn.textContent = '已复制!';
+                btn.textContent = '已复制';
+                btn.classList.add('copied');
                 setTimeout(() => {
                     btn.textContent = '复制';
+                    btn.classList.remove('copied');
                 }, 2000);
             });
         }
