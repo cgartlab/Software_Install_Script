@@ -1,11 +1,9 @@
 title: Software Install Script
 description: Windows 和 macOS 软件批量安装工具
-theme: jekyll-theme-midnight
 
-# 禁用 Jekyll，确保 HTML 文件被正确处理
+jekyll: false
 markdown: kramdown
 plugins: []
 
-# GitHub Pages 配置
 github:
   repository_nwo: cgartlab/Software_Install_Script
