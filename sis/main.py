@@ -15,6 +15,7 @@ from rich import print as rprint
 
 from sis.installer import WindowsInstaller, MacOSInstaller
 from sis.config import Config
+from sis.i18n import t
 
 console = Console()
 
@@ -125,12 +126,12 @@ def _config():
 
 def _search_software():
     """Search software using available package managers"""
-    console.print("\n[bold cyan]Search Software[/bold cyan]")
+    console.print(f"\n[bold cyan]{t('search_software')}[/bold cyan]")
     
     # Get search query from user
-    query = Prompt.ask("Enter software name or keyword to search")
+    query = Prompt.ask(t('enter_search_query'))
     if not query:
-        console.print("[yellow]Search query cannot be empty[/yellow]")
+        console.print(f"[yellow]{t('search_query_empty')}[/yellow]")
         return
     
     # Detect platform and available package managers
@@ -144,12 +145,12 @@ def _search_software():
                 text=True
             )
             if result.returncode == 0:
-                console.print("[cyan]Using Homebrew to search...[/cyan]")
+                console.print(f"[cyan]{t('using_homebrew')}[/cyan]")
                 _search_with_brew(query)
             else:
-                console.print("[red]Homebrew is not available[/red]")
+                console.print(f"[red]{t('brew_not_available')}[/red]")
         except Exception as e:
-            console.print(f"[red]Error checking Homebrew: {e}[/red]")
+            console.print(f"[red]{t('error_checking_brew')}: {e}[/red]")
     
     elif sys.platform.startswith('win32'):
         # Windows: Check for Winget
@@ -161,15 +162,15 @@ def _search_software():
                 text=True
             )
             if result.returncode == 0:
-                console.print("[cyan]Using Winget to search...[/cyan]")
+                console.print(f"[cyan]{t('using_winget')}[/cyan]")
                 _search_with_winget(query)
             else:
-                console.print("[red]Winget is not available[/red]")
+                console.print(f"[red]{t('winget_not_available')}[/red]")
         except Exception as e:
-            console.print(f"[red]Error checking Winget: {e}[/red]")
+            console.print(f"[red]{t('error_checking_winget')}: {e}[/red]")
     
     else:
-        console.print("[red]Unsupported platform for software search[/red]")
+        console.print(f"[red]{t('unsupported_platform')}[/red]")
 
 def _search_with_brew(query):
     """Search software using Homebrew"""
@@ -309,10 +310,10 @@ def _is_winget_package_installed(software_id):
 def _display_search_results(results):
     """Display search results in an interactive interface"""
     if not results:
-        console.print("[yellow]No results found[/yellow]")
+        console.print(f"[yellow]{t('no_results')}[/yellow]")
         return
     
-    console.print(f"\n[bold cyan]Found {len(results)} results:[/bold cyan]")
+    console.print(f"\n[bold cyan]{t('found_results', count=len(results))}[/bold cyan]")
     
     # First display results in a table
     table = Table(show_header=True, header_style="bold green")
@@ -336,11 +337,11 @@ def _display_search_results(results):
         )
     
     console.print(table)
-    console.print("[dim]How to select:[/dim]")
-    console.print("[dim]1. Use UP/DOWN arrow keys to navigate options[/dim]")
-    console.print("[dim]2. Press ENTER to select the highlighted option[/dim]")
-    console.print("[dim]3. Or directly type the software number and press ENTER[/dim]")
-    console.print("[dim]4. Type 'q' and press ENTER to quit[/dim]")
+    console.print(f"[dim]{t('how_to_select')}[/dim]")
+    console.print(f"[dim]{t('hint_arrow_keys')}[/dim]")
+    console.print(f"[dim]{t('hint_enter')}[/dim]")
+    console.print(f"[dim]{t('hint_type_number')}[/dim]")
+    console.print(f"[dim]{t('hint_quit')}[/dim]")
     
     # Create choice options (just numbers and 'q')
     choice_options = [str(i) for i in range(1, len(results) + 1)] + ['q']
@@ -350,13 +351,13 @@ def _display_search_results(results):
         try:
             # Get user input with auto-complete and navigation
             choice = Prompt.ask(
-                "\nSelect an option",
+                f"\n{t('select_an_option')}",
                 choices=choice_options,
                 show_choices=False
             )
             
             if choice == 'q':
-                console.print("[green]Exiting search...[/green]")
+                console.print(f"[green]{t('exiting_search')}[/green]")
                 break
             
             # Handle number input
@@ -369,20 +370,20 @@ def _display_search_results(results):
                     break
             
             # If we get here, input was invalid
-            console.print("[red]Invalid selection. Please try again.[/red]")
+            console.print(f"[red]{t('invalid_selection')}[/red]")
         except (ValueError, IndexError):
             # Handle invalid input
-            console.print("[red]Invalid selection. Please try again.[/red]")
+            console.print(f"[red]{t('invalid_selection')}[/red]")
 
 def _add_to_install_queue(software):
     """Add selected software to installation queue"""
-    console.print(f"\n[bold cyan]Adding to installation queue:[/bold cyan]")
+    console.print(f"\n[bold cyan]{t('adding_to_queue')}[/bold cyan]")
     console.print(f"Name: {software.get('name', 'N/A')}")
     console.print(f"Description: {software.get('description', 'N/A')}")
     console.print(f"Package: {software.get('id', software.get('name', 'N/A'))}")
     
     # Get confirmation from user
-    if Confirm.ask("Do you want to add this software to the installation queue?"):
+    if Confirm.ask(t('confirm_add')):
         # Add to config
         config = Config()
         
@@ -406,12 +407,12 @@ def _add_to_install_queue(software):
         
         # Save config
         config.save()
-        console.print("[green]Software added to installation queue successfully![/green]")
+        console.print(f"[green]{t('added_successfully')}[/green]")
         
         # Show current queue
         _show_install_queue()
     else:
-        console.print("[yellow]Software not added to installation queue[/yellow]")
+        console.print(f"[yellow]{t('not_added')}[/yellow]")
 
 def _show_install_queue():
     """Show current installation queue"""
@@ -419,10 +420,10 @@ def _show_install_queue():
     software_list = config.get_software_list()
     
     if not software_list:
-        console.print("[yellow]Installation queue is empty[/yellow]")
+        console.print(f"[yellow]{t('queue_empty')}[/yellow]")
         return
     
-    console.print("\n[bold cyan]Current Installation Queue:[/bold cyan]")
+    console.print(f"\n[bold cyan]{t('installation_queue')}[/bold cyan]")
     table = Table(show_header=True, header_style="bold green")
     table.add_column("#", style="dim")
     table.add_column("Name", style="dim")
@@ -440,7 +441,7 @@ def _show_install_queue():
     console.print(table)
     
     # Offer to remove software from queue
-    if Confirm.ask("Do you want to remove any software from the queue?"):
+    if Confirm.ask(t('remove_from_queue')):
         _remove_from_install_queue()
 
 def _remove_from_install_queue():
@@ -449,19 +450,19 @@ def _remove_from_install_queue():
     software_list = config.get_software_list()
     
     if not software_list:
-        console.print("[yellow]Installation queue is empty[/yellow]")
+        console.print(f"[yellow]{t('queue_empty')}[/yellow]")
         return
     
     # Get user input for software to remove
     while True:
         try:
             index = Prompt.ask(
-                "Enter the number of the software to remove (or 'q' to quit)",
+                t('enter_remove_number'),
                 choices=[str(i) for i in range(1, len(software_list) + 1)] + ['q']
             )
             
             if index == 'q':
-                console.print("[green]Exiting remove mode...[/green]")
+                console.print(f"[green]{t('exiting_remove')}[/green]")
                 break
             
             # Convert to zero-based index
@@ -470,16 +471,16 @@ def _remove_from_install_queue():
                 removed_software = software_list[remove_index]
                 if config.remove_software(remove_index):
                     config.save()
-                    console.print(f"[green]Successfully removed {removed_software.get('name', 'Software')} from queue[/green]")
+                    console.print(f"[green]{t('removed_successfully', name=removed_software.get('name', 'Software'))}[/green]")
                     # Show updated queue
                     _show_install_queue()
                     break
                 else:
-                    console.print("[red]Failed to remove software. Please try again.[/red]")
+                    console.print(f"[red]{t('failed_remove')}[/red]")
             else:
-                console.print("[red]Invalid software number. Please try again.[/red]")
+                console.print(f"[red]{t('invalid_software_number')}[/red]")
         except ValueError:
-            console.print("[red]Invalid input. Please enter a number or 'q'.[/red]")
+            console.print(f"[red]{t('invalid_input')}[/red]")
 
 @click.group()
 def cli():
@@ -505,18 +506,18 @@ def config():
 @cli.command()
 def tui():
     """Launch text-based user interface"""
-    console.print("\n[bold cyan]Software Install Script - TUI Mode[/bold cyan]")
+    console.print(f"\n[bold cyan]{t('main_menu_title')}[/bold cyan]")
     console.print("=======================================")
     
     while True:
-        console.print("\n[bold green]Main Menu[/bold green]")
-        console.print("1. Install software")
-        console.print("2. Configure software list")
-        console.print("3. Search software")
-        console.print("4. Settings")
-        console.print("5. Exit")
+        console.print(f"\n[bold green]{t('main_menu')}[/bold green]")
+        console.print(t('menu_install'))
+        console.print(t('menu_config'))
+        console.print(t('menu_search'))
+        console.print(t('menu_settings'))
+        console.print(t('menu_exit'))
         
-        choice = Prompt.ask("Enter your choice", choices=["1", "2", "3", "4", "5"])
+        choice = Prompt.ask(t('enter_choice'), choices=["1", "2", "3", "4", "5"])
         
         if choice == "1":
             _install()
@@ -525,9 +526,9 @@ def tui():
         elif choice == "3":
             _search_software()
         elif choice == "4":
-            console.print("\n[bold yellow]Settings not implemented yet[/bold yellow]")
+            console.print(f"\n[bold yellow]{t('settings_not_implemented')}[/bold yellow]")
         elif choice == "5":
-            console.print("\n[green]Exiting...[/green]")
+            console.print(f"\n[green]{t('exiting')}[/green]")
             break
 
 if __name__ == '__main__':
