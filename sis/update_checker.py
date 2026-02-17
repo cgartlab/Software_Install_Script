@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.text import Text
 from rich.panel import Panel
 from rich.align import Align
+from rich import box
 
 from sis.i18n import t, get_i18n
 from sis.ui import get_ui, Colors, Icons
@@ -158,7 +159,7 @@ class UpdateChecker:
             ),
             title=f"[bold {Colors.PRIMARY}]{t('update_notification')}[/]",
             border_style=Colors.PRIMARY,
-            box=ui.get_box_style()
+            box=box.ROUNDED
         )
         
         console.print(panel)
