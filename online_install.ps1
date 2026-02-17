@@ -9,7 +9,7 @@ Write-Host ""
 
 Write-Host "[INFO] This script will install the Software Install Script (SIS) tool." -ForegroundColor Gray
 Write-Host "[INFO] It will:" -ForegroundColor Gray
-Write-Host "  1. Download the latest version from https://cgartlab.com/Software_Install_Script/" -ForegroundColor Gray
+Write-Host "  1. Download the latest version from GitHub" -ForegroundColor Gray
 Write-Host "  2. Install dependencies" -ForegroundColor Gray
 Write-Host "  3. Add to system PATH" -ForegroundColor Gray
 Write-Host ""

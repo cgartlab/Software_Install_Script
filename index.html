@@ -3,1197 +3,515 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftInstall — 跨平台软件批量安装工具</title>
-    <meta name="description" content="SwiftInstall 是一款现代化的跨平台软件批量安装工具，支持 Windows 和 macOS，提供向导式安装、环境检测、批量安装等功能。">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>SwiftInstall - 快速、简单、可靠的跨平台软件安装工具</title>
     <style>
-        :root {
-            /* 优雅的色彩系统 - 低饱和度高级灰调 */
-            --color-bg: #fafafa;
-            --color-bg-elevated: #ffffff;
-            --color-bg-subtle: #f5f5f5;
-            --color-bg-code: #1a1a2e;
-            
-            --color-text-primary: #171717;
-            --color-text-secondary: #525252;
-            --color-text-tertiary: #737373;
-            --color-text-muted: #a3a3a3;
-            
-            --color-accent: #0f172a;
-            --color-accent-light: #334155;
-            --color-highlight: #6366f1;
-            --color-highlight-soft: rgba(99, 102, 241, 0.08);
-            
-            --color-border: #e5e5e5;
-            --color-border-light: #f0f0f0;
-            --color-success: #10b981;
-            
-            /* 精致的间距系统 */
-            --space-xs: 0.25rem;
-            --space-sm: 0.5rem;
-            --space-md: 1rem;
-            --space-lg: 1.5rem;
-            --space-xl: 2rem;
-            --space-2xl: 3rem;
-            --space-3xl: 4rem;
-            --space-4xl: 6rem;
-            
-            /* 优雅的圆角 */
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            
-            /* 柔和的阴影 */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
-            
-            /* 字体 */
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas, monospace;
-            
-            /* 过渡 */
-            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
-            font-family: var(--font-sans);
-            background: var(--color-bg);
-            color: var(--color-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            min-height: 100vh;
         }
 
-        /* 容器 */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 var(--space-xl);
+            padding: 0 20px;
         }
 
-        /* 导航栏 - 极简风格 */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(250, 250, 250, 0.8);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid transparent;
-            transition: var(--transition-base);
-        }
-
-        nav.scrolled {
-            border-bottom-color: var(--color-border-light);
-        }
-
-        nav .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 72px;
+        /* Header */
+        header {
+            padding: 60px 0;
+            text-align: center;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            text-decoration: none;
-            color: var(--color-text-primary);
-            font-weight: 600;
-            font-size: 1.125rem;
-            letter-spacing: -0.02em;
-            transition: var(--transition-fast);
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
         }
 
-        .logo:hover {
-            opacity: 0.7;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .logo-mark {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--color-text-primary);
-        }
-
-        .logo-mark svg {
-            width: 28px;
-            height: 28px;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: var(--space-xl);
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--color-text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: var(--transition-fast);
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 1.5px;
-            background: var(--color-accent);
-            transition: var(--transition-fast);
-        }
-
-        .nav-links a:hover {
-            color: var(--color-text-primary);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-cta {
-            background: var(--color-accent);
-            color: white !important;
-            padding: var(--space-sm) var(--space-md);
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: var(--transition-fast);
-        }
-
-        .nav-cta:hover {
-            background: var(--color-accent-light);
-            transform: translateY(-1px);
-        }
-
-        .nav-cta::after {
-            display: none !important;
-        }
-
-        /* Hero 区域 - 大量留白 */
-        .hero {
-            padding: calc(72px + var(--space-4xl)) 0 var(--space-4xl);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* 微妙的背景装饰 */
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, var(--color-highlight-soft) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-sm);
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            padding: var(--space-xs) var(--space-md);
-            border-radius: 100px;
-            font-size: 0.8125rem;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-xl);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .hero-badge span:first-child {
-            color: var(--color-highlight);
-            font-weight: 600;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
+        h1 {
+            font-size: 3rem;
             font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            margin-bottom: var(--space-lg);
-            color: var(--color-text-primary);
+            background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
         }
 
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--color-text-secondary);
-            max-width: 560px;
-            margin: 0 auto var(--space-xl);
-            line-height: 1.7;
-            font-weight: 400;
+        .tagline {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-bottom: 40px;
         }
 
-        .hero-actions {
+        .badges {
             display: flex;
-            gap: var(--space-md);
             justify-content: center;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
-        /* 按钮系统 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-md) var(--space-xl);
-            border-radius: var(--radius-md);
-            font-size: 0.9375rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all var(--transition-fast);
-            cursor: pointer;
-            border: none;
-            font-family: inherit;
+        .badge {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #818cf8;
         }
 
-        .btn-primary {
-            background: var(--color-accent);
-            color: white;
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-primary:hover {
-            background: var(--color-accent-light);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-secondary {
-            background: var(--color-bg-elevated);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--color-text-muted);
-            background: var(--color-bg-subtle);
-        }
-
-        .btn svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* 安装区域 */
+        /* Installation Section */
         .install-section {
-            padding: var(--space-4xl) 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid rgba(99, 102, 241, 0.3);
         }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: var(--space-2xl);
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--color-highlight);
-            margin-bottom: var(--space-sm);
-        }
-
-        .section-title {
+        .install-section h2 {
             font-size: 2rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-sm);
+            margin-bottom: 30px;
+            text-align: center;
+            color: #818cf8;
         }
 
-        .section-desc {
-            font-size: 1.0625rem;
-            color: var(--color-text-secondary);
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* 平台标签页 */
         .platform-tabs {
             display: flex;
             justify-content: center;
-            gap: var(--space-xs);
-            margin-bottom: var(--space-xl);
-            padding: var(--space-xs);
-            background: var(--color-bg-subtle);
-            border-radius: var(--radius-lg);
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
+            gap: 10px;
+            margin-bottom: 30px;
         }
 
-        .platform-tab {
-            padding: var(--space-sm) var(--space-lg);
-            border: none;
+        .tab-btn {
             background: transparent;
-            border-radius: var(--radius-md);
+            border: 2px solid #6366f1;
+            color: #f8fafc;
+            padding: 12px 30px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-            transition: all var(--transition-fast);
-            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .platform-tab:hover {
-            color: var(--color-text-primary);
-        }
-
-        .platform-tab.active {
-            background: var(--color-bg-elevated);
-            color: var(--color-text-primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* 安装卡片 */
-        .install-card {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-xl);
-            padding: var(--space-2xl);
-            box-shadow: var(--shadow-lg);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .install-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .install-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .install-step {
-            margin-bottom: var(--space-xl);
-        }
-
-        .install-step:last-child {
-            margin-bottom: 0;
-        }
-
-        .install-step-header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            margin-bottom: var(--space-sm);
-        }
-
-        .step-number {
-            width: 24px;
-            height: 24px;
-            background: var(--color-highlight-soft);
-            color: var(--color-highlight);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .install-step h3 {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--color-text-primary);
-        }
-
-        .install-step p {
-            font-size: 0.875rem;
-            color: var(--color-text-tertiary);
-            margin-bottom: var(--space-md);
-            margin-left: calc(24px + var(--space-sm));
-        }
-
-        /* 代码块 */
-        .code-block {
-            background: var(--color-bg-code);
-            color: #e4e4e7;
-            padding: var(--space-md) var(--space-lg);
-            border-radius: var(--radius-md);
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--space-md);
-            overflow-x: auto;
-            margin-left: calc(24px + var(--space-sm));
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .code-block code {
-            flex: 1;
-            white-space: nowrap;
-        }
-
-        .code-block .comment {
-            color: #6b7280;
-        }
-
-        .copy-btn {
-            background: rgba(255, 255, 255, 0.08);
-            color: #9ca3af;
-            border: none;
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all var(--transition-fast);
-            white-space: nowrap;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-        }
-
-        .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #e4e4e7;
-        }
-
-        .copy-btn.copied {
-            background: var(--color-success);
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: #6366f1;
             color: white;
         }
 
-        /* 功能区域 */
-        .features-section {
-            padding: var(--space-4xl) 0;
-            background: var(--color-bg-subtle);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: var(--space-lg);
-        }
-
-        .feature-card {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-xl);
-            transition: all var(--transition-base);
+        .code-block {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
             position: relative;
             overflow: hidden;
         }
 
-        .feature-card::before {
+        .code-block::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--color-highlight), transparent);
-            opacity: 0;
-            transition: opacity var(--transition-base);
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #818cf8);
+        }
+
+        .code-block code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            color: #10b981;
+            font-size: 0.95rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+            color: #f8fafc;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #6366f1;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 60px 0;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #818cf8;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
         }
 
         .feature-card:hover {
-            border-color: var(--color-border);
-            box-shadow: var(--shadow-xl);
-            transform: translateY(-4px);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
+            transform: translateY(-5px);
+            border-color: #6366f1;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
         }
 
         .feature-icon {
-            width: 44px;
-            height: 44px;
-            background: var(--color-highlight-soft);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: var(--space-md);
-            transition: transform var(--transition-base);
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1);
+            font-size: 3rem;
+            margin-bottom: 20px;
         }
 
         .feature-card h3 {
-            font-size: 1.0625rem;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-xs);
-            letter-spacing: -0.01em;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #f8fafc;
         }
 
         .feature-card p {
-            font-size: 0.9375rem;
-            color: var(--color-text-secondary);
+            color: #94a3b8;
+            line-height: 1.8;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .demo-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: #818cf8;
+        }
+
+        .terminal {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-btn.red { background: #ef4444; }
+        .terminal-btn.yellow { background: #f59e0b; }
+        .terminal-btn.green { background: #10b981; }
+
+        .terminal-content {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
             line-height: 1.6;
-            margin-bottom: var(--space-md);
         }
 
-        .feature-command {
-            display: inline-flex;
-            align-items: center;
-            background: var(--color-bg-subtle);
-            color: var(--color-text-secondary);
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: var(--radius-sm);
-            font-family: var(--font-mono);
-            font-size: 0.8125rem;
-            border: 1px solid var(--color-border-light);
+        .terminal-line {
+            margin: 5px 0;
         }
 
-        /* 文档区域 */
-        .docs-section {
-            padding: var(--space-4xl) 0;
+        .terminal-prompt {
+            color: #6366f1;
         }
 
-        .docs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: var(--space-md);
+        .terminal-command {
+            color: #f8fafc;
         }
 
-        .doc-card {
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
+        .terminal-output {
+            color: #94a3b8;
+        }
+
+        .terminal-success {
+            color: #10b981;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .tech-stack h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: #818cf8;
+        }
+
+        .tech-grid {
             display: flex;
-            align-items: flex-start;
-            gap: var(--space-md);
-            text-decoration: none;
-            transition: all var(--transition-base);
-        }
-
-        .doc-card:hover {
-            border-color: var(--color-highlight);
-            box-shadow: var(--shadow-lg);
-            transform: translateX(4px);
-        }
-
-        .doc-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--color-bg-subtle);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-            transition: all var(--transition-base);
-        }
-
-        .doc-card:hover .doc-icon {
-            background: var(--color-highlight-soft);
-        }
-
-        .doc-content h3 {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-xs);
-        }
-
-        .doc-content p {
-            font-size: 0.875rem;
-            color: var(--color-text-tertiary);
-            line-height: 1.5;
-        }
-
-        /* 页脚 */
-        footer {
-            border-top: 1px solid var(--color-border);
-            padding: var(--space-2xl) 0;
-            margin-top: var(--space-2xl);
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 30px;
             flex-wrap: wrap;
-            gap: var(--space-md);
         }
 
-        .footer-brand {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            color: var(--color-text-secondary);
-            font-size: 0.875rem;
+        .tech-item {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 20px 40px;
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
-        .footer-brand a {
-            color: var(--color-text-primary);
+        .tech-item a {
+            color: #818cf8;
             text-decoration: none;
-            font-weight: 500;
-            transition: color var(--transition-fast);
+            font-weight: 600;
         }
 
-        .footer-brand a:hover {
-            color: var(--color-highlight);
+        .tech-item a:hover {
+            color: #6366f1;
         }
 
-        .footer-links {
-            display: flex;
-            gap: var(--space-xl);
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+            margin-top: 60px;
         }
 
-        .footer-links a {
-            color: var(--color-text-tertiary);
+        footer p {
+            color: #64748b;
+        }
+
+        footer a {
+            color: #818cf8;
             text-decoration: none;
-            font-size: 0.875rem;
-            transition: color var(--transition-fast);
         }
 
-        .footer-links a:hover {
-            color: var(--color-text-primary);
-        }
-
-        /* 响应式 */
+        /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 0 var(--space-md);
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero {
-                padding: calc(72px + var(--space-3xl)) 0 var(--space-3xl);
-            }
-
-            .hero h1 {
+            h1 {
                 font-size: 2rem;
             }
 
-            .hero p {
-                font-size: 1.0625rem;
+            .tagline {
+                font-size: 1.1rem;
             }
 
-            .install-card {
-                padding: var(--space-lg);
-            }
-
-            .code-block {
-                margin-left: 0;
+            .platform-tabs {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: var(--space-sm);
             }
 
-            .install-step p {
-                margin-left: 0;
-            }
-
-            .features-grid {
+            .feature-grid {
                 grid-template-columns: 1fr;
             }
-
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-
-        /* 深色模式 */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-bg: #0a0a0a;
-                --color-bg-elevated: #141414;
-                --color-bg-subtle: #1a1a1a;
-                --color-bg-code: #0d0d12;
-                
-                --color-text-primary: #fafafa;
-                --color-text-secondary: #a3a3a3;
-                --color-text-tertiary: #737373;
-                --color-text-muted: #525252;
-                
-                --color-accent: #fafafa;
-                --color-accent-light: #e5e5e5;
-                --color-highlight: #818cf8;
-                --color-highlight-soft: rgba(129, 140, 248, 0.1);
-                
-                --color-border: #262626;
-                --color-border-light: #1f1f1f;
-                
-                --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
-                --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
-            }
-
-            nav {
-                background: rgba(10, 10, 10, 0.8);
-            }
-
-            .logo-mark {
-                background: var(--color-bg-elevated);
-                border: 1px solid var(--color-border);
-                color: var(--color-text-primary);
-            }
-
-            .nav-cta {
-                background: var(--color-bg-elevated);
-                border: 1px solid var(--color-border);
-                color: var(--color-text-primary) !important;
-            }
-
-            .nav-cta:hover {
-                background: var(--color-bg-subtle);
-                border-color: var(--color-text-muted);
-            }
-
-            .btn-primary {
-                background: var(--color-bg-elevated);
-                border: 1px solid var(--color-border);
-            }
-
-            .btn-primary:hover {
-                background: var(--color-bg-subtle);
-                border-color: var(--color-text-muted);
-            }
-
-            .feature-command {
-                background: var(--color-bg);
-                border-color: var(--color-border);
-            }
-
-            .doc-icon {
-                background: var(--color-bg);
-            }
-        }
-
-        /* 滚动条美化 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--color-border);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-text-muted);
-        }
-
-        /* 选择文字颜色 */
-        ::selection {
-            background: var(--color-highlight-soft);
-            color: var(--color-highlight);
         }
     </style>
 </head>
 <body>
-    <nav id="navbar">
-        <div class="container">
-            <a href="#" class="logo">
-                SwiftInstall
-            </a>
-            <ul class="nav-links">
-                <li><a href="#install">安装</a></li>
-                <li><a href="#features">功能</a></li>
-                <li><a href="#docs">文档</a></li>
-                <li><a href="https://cgartlab.com" target="_blank">博客</a></li>
-                <li><a href="https://github.com/cgartlab/Software_Install_Script" target="_blank" class="nav-cta">GitHub</a></li>
-            </ul>
-        </div>
-    </nav>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">⚡</div>
+            <h1>SwiftInstall</h1>
+            <p class="tagline">快速、简单、可靠的跨平台软件安装工具</p>
+            <div class="badges">
+                <span class="badge">🎨 精美 TUI</span>
+                <span class="badge">🚀 极速安装</span>
+                <span class="badge">📦 跨平台</span>
+                <span class="badge">💾 单文件</span>
+            </div>
+        </header>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <div class="hero-badge">
-                    <span>v2.0</span>
-                    <span>全新升级</span>
+        <!-- Installation -->
+        <section class="install-section">
+            <h2>🚀 一键安装</h2>
+            <div class="platform-tabs">
+                <button class="tab-btn active" onclick="showTab('windows')">Windows</button>
+                <button class="tab-btn" onclick="showTab('linux')">Linux</button>
+                <button class="tab-btn" onclick="showTab('macos')">macOS</button>
+            </div>
+
+            <div id="windows" class="tab-content">
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    <code>iex (irm https://cgartlab.com/SwiftInstall/install.ps1)</code>
                 </div>
-                <h1>跨平台软件批量安装工具</h1>
-                <p>现代化的命令行工具，让 Windows 与 macOS 的软件安装变得简单、高效、优雅</p>
-                <div class="hero-actions">
-                    <a href="#install" class="btn btn-primary">快速开始</a>
-                    <a href="https://github.com/cgartlab/Software_Install_Script" class="btn btn-secondary" target="_blank">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                        GitHub
-                    </a>
+            </div>
+
+            <div id="linux" class="tab-content" style="display: none;">
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
+                </div>
+            </div>
+
+            <div id="macos" class="tab-content" style="display: none;">
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
                 </div>
             </div>
         </section>
 
-        <section id="install" class="install-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Installation</div>
-                    <h2 class="section-title">快速安装</h2>
-                    <p class="section-desc">选择您的操作系统，一行命令即可完成安装</p>
+        <!-- Features -->
+        <section class="features">
+            <h2>✨ 特性</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>精美的 TUI 界面</h3>
+                    <p>基于 Bubble Tea 的现代化终端交互体验，支持箭头键导航，操作流畅自然。</p>
                 </div>
-
-                <div class="platform-tabs">
-                    <button class="platform-tab active" data-platform="windows">Windows</button>
-                    <button class="platform-tab" data-platform="macos">macOS</button>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>极速安装</h3>
+                    <p>支持并行安装多个软件包，大幅提升软件部署效率，节省时间。</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>智能搜索</h3>
+                    <p>内置软件包搜索功能，快速找到所需软件，支持模糊匹配。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>配置管理</h3>
+                    <p>交互式配置文件管理，轻松增删软件包，支持导入导出配置。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>跨平台支持</h3>
+                    <p>支持 Windows (Winget)、macOS (Homebrew) 和 Linux，一套工具走遍天下。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>单二进制文件</h3>
+                    <p>使用 Go 语言编写，编译为单二进制文件，无需依赖，随处运行。</p>
+                </div>
+            </div>
+        </section>
 
-                <div class="install-card">
-                    <div id="windows-install" class="install-content active">
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">1</span>
-                                <h3>一键安装（推荐）</h3>
-                            </div>
-                            <p>在 PowerShell 中运行以下命令</p>
-                            <div class="code-block">
-                                <code>irm https://cgartlab.com/Software_Install_Script/install.py | python3</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">2</span>
-                                <h3>或使用 PowerShell 脚本</h3>
-                            </div>
-                            <div class="code-block">
-                                <code>irm https://cgartlab.com/Software_Install_Script/install_global.ps1 | iex</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">3</span>
-                                <h3>验证安装</h3>
-                            </div>
-                            <div class="code-block">
-                                <code>sis --help</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
+        <!-- Demo -->
+        <section class="demo-section">
+            <h2>🖥️ 界面预览</h2>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-btn red"></div>
+                    <div class="terminal-btn yellow"></div>
+                    <div class="terminal-btn green"></div>
+                </div>
+                <div class="terminal-content">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command"> sis install</span>
                     </div>
-
-                    <div id="macos-install" class="install-content">
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">1</span>
-                                <h3>一键安装（推荐）</h3>
-                            </div>
-                            <p>在终端中运行以下命令</p>
-                            <div class="code-block">
-                                <code>curl -fsSL https://cgartlab.com/Software_Install_Script/install.py | python3</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">2</span>
-                                <h3>或使用 Shell 脚本</h3>
-                            </div>
-                            <div class="code-block">
-                                <code>curl -fsSL https://cgartlab.com/Software_Install_Script/macos_installer.sh | bash</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
-                        <div class="install-step">
-                            <div class="install-step-header">
-                                <span class="step-number">3</span>
-                                <h3>验证安装</h3>
-                            </div>
-                            <div class="code-block">
-                                <code>sis --help</code>
-                                <button class="copy-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    复制
-                                </button>
-                            </div>
-                        </div>
+                    <div class="terminal-line terminal-output">
+                        <br>
+                        ⚡ 软件安装<br>
+                        <br>
+                        ████████████████████░░░░░ 75%<br>
+                        <br>
+                        安装中...<br>
+                        <br>
+                        Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status<br>
+                        ─────────────────────────────────────────<br>
+                        Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Git.Git &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
+                        VS Code &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Microsoft.VSCode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="terminal-success">✓ 成功</span><br>
+                        7-Zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7zip.7zip &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;◉ 安装中<br>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="features" class="features-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Features</div>
-                    <h2 class="section-title">核心功能</h2>
-                    <p class="section-desc">简洁而强大的功能设计，提升工作效率</p>
+        <!-- Tech Stack -->
+        <section class="tech-stack">
+            <h2>🏗️ 技术栈</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <a href="https://golang.org" target="_blank">Go</a>
                 </div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🎨</div>
-                        <h3>向导式安装</h3>
-                        <p>图形化安装向导，支持中英文双语，操作简单直观，无需记忆复杂命令</p>
-                        <span class="feature-command">sis wizard</span>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔍</div>
-                        <h3>环境检测</h3>
-                        <p>自动检测系统环境、Python 版本、内存、磁盘空间等，提前发现潜在问题</p>
-                        <span class="feature-command">sis check</span>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🚀</div>
-                        <h3>批量安装</h3>
-                        <p>支持并行批量安装，最多 4 线程同时下载安装，大幅节省时间</p>
-                        <span class="feature-command">sis batch</span>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚙️</div>
-                        <h3>环境变量热刷新</h3>
-                        <p>无需重启终端即可刷新环境变量，配置修改立即生效</p>
-                        <span class="feature-command">sis refresh</span>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📝</div>
-                        <h3>自动化脚本导出</h3>
-                        <p>导出 PowerShell/Bash/Python 脚本，方便批量部署和团队协作</p>
-                        <span class="feature-command">sis export</span>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🛡️</div>
-                        <h3>沙盒检测</h3>
-                        <p>自动检测沙盒环境，提供相应的处理方案，确保安装顺利进行</p>
-                        <span class="feature-command">sis check</span>
-                    </div>
+                <div class="tech-item">
+                    <a href="https://github.com/charmbracelet/bubbletea" target="_blank">Bubble Tea</a>
+                </div>
+                <div class="tech-item">
+                    <a href="https://github.com/charmbracelet/lipgloss" target="_blank">Lipgloss</a>
+                </div>
+                <div class="tech-item">
+                    <a href="https://github.com/spf13/cobra" target="_blank">Cobra</a>
                 </div>
             </div>
         </section>
 
-        <section id="docs" class="docs-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Resources</div>
-                    <h2 class="section-title">文档与资源</h2>
-                    <p class="section-desc">获取更多帮助和信息</p>
-                </div>
-                <div class="docs-grid">
-                    <a href="https://github.com/cgartlab/Software_Install_Script/blob/main/README.md" class="doc-card" target="_blank">
-                        <div class="doc-icon">📖</div>
-                        <div class="doc-content">
-                            <h3>完整文档</h3>
-                            <p>详细的功能说明和使用指南</p>
-                        </div>
-                    </a>
-                    <a href="https://github.com/cgartlab/Software_Install_Script/blob/main/README_CLI.md" class="doc-card" target="_blank">
-                        <div class="doc-icon">🎯</div>
-                        <div class="doc-content">
-                            <h3>CLI 文档</h3>
-                            <p>命令行工具详细使用说明</p>
-                        </div>
-                    </a>
-                    <a href="https://github.com/cgartlab/Software_Install_Script/issues" class="doc-card" target="_blank">
-                        <div class="doc-icon">💬</div>
-                        <div class="doc-content">
-                            <h3>问题反馈</h3>
-                            <p>提交 Issue 获取帮助和支持</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <span>© 2026 SwiftInstall. 由</span>
-                    <a href="https://github.com/cgartlab" target="_blank">cgartlab</a>
-                    <span>维护</span>
-                </div>
-                <div class="footer-links">
-                    <a href="https://github.com/cgartlab/Software_Install_Script" target="_blank">GitHub</a>
-                    <a href="https://github.com/cgartlab/Software_Install_Script/blob/main/LICENSE-2.0" target="_blank">许可证</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+        <!-- Footer -->
+        <footer>
+            <p>Made with ❤️ by <a href="https://cgartlab.com">CGArtLab</a></p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/yourusername/swiftinstall">GitHub</a> •
+                <a href="https://cgartlab.com/SwiftInstall/docs">文档</a> •
+                <a href="https://github.com/yourusername/swiftinstall/releases">下载</a>
+            </p>
+        </footer>
+    </div>
 
     <script>
-        // 导航栏滚动效果
-        const navbar = document.getElementById('navbar');
-        let lastScroll = 0;
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
+        function showTab(platform) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
             
-            if (currentScroll > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
             
-            lastScroll = currentScroll;
-        });
+            // Show selected tab
+            document.getElementById(platform).style.display = 'block';
+            event.target.classList.add('active');
+        }
 
-        // 平台标签切换
-        document.querySelectorAll('.platform-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
-                
-                tab.classList.add('active');
-                const platform = tab.dataset.platform;
-                document.getElementById(`${platform}-install`).classList.add('active');
+        function copyCode(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => {
+                    btn.textContent = '复制';
+                }, 2000);
             });
-        });
-
-        // 复制功能
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const code = btn.parentElement.querySelector('code').textContent;
-                
-                try {
-                    await navigator.clipboard.writeText(code);
-                    
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = `
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        已复制
-                    `;
-                    btn.classList.add('copied');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.classList.remove('copied');
-                    }, 2000);
-                } catch (err) {
-                    console.error('复制失败:', err);
-                }
-            });
-        });
-
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const offset = 100;
-                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // 功能卡片入场动画
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.feature-card').forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
-            observer.observe(card);
-        });
+        }
     </script>
 </body>
 </html>
