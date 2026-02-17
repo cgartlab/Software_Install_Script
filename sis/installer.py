@@ -109,7 +109,8 @@ class MacOSInstaller(BaseInstaller):
         else:
             console.error("Homebrew not found. Please install Homebrew.")
             # Offer to install homebrew
-            if input("Do you want to install Homebrew? (y/n): ").lower() == 'y':
+            from rich.prompt import Confirm
+            if Confirm.ask("Do you want to install Homebrew?"):
                 self._install_brew()
             else:
                 sys.exit(1)
