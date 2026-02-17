@@ -94,7 +94,7 @@ func (c *Config) load() {
 
 	// 确保配置目录存在
 	configDir := filepath.Dir(c.configFile)
-	os.MkdirAll(configDir, 0755)
+	_ = os.MkdirAll(configDir, 0755)
 
 	// 检查配置文件是否存在
 	if _, err := os.Stat(c.configFile); os.IsNotExist(err) {
@@ -125,7 +125,7 @@ func (c *Config) getDefaultConfigPath() string {
 // createDefaultConfig 创建默认配置
 func (c *Config) createDefaultConfig() {
 	c.software = c.getDefaultSoftware()
-	c.save()
+	_ = c.save()
 }
 
 // getDefaultSoftware 获取默认软件列表

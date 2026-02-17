@@ -18,17 +18,16 @@ import (
 
 // InstallModel 安装界面模型
 type InstallModel struct {
-	packages      []config.Software
-	results       []*installer.InstallResult
-	currentIndex  int
-	progress      progress.Model
-	table         table.Model
-	status        string
-	quitting      bool
-	done          bool
-	parallel      bool
-	width         int
-	height        int
+	packages []config.Software
+	results  []*installer.InstallResult
+	progress progress.Model
+	table    table.Model
+	status   string
+	quitting bool
+	done     bool
+	parallel bool
+	width    int
+	height   int
 }
 
 // tickMsg 定时消息

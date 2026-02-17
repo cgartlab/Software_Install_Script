@@ -26,7 +26,6 @@ func (i MenuItem) FilterValue() string { return i.Title }
 // MainMenuModel 主菜单模型
 type MainMenuModel struct {
 	list     list.Model
-	choice   string
 	quitting bool
 	width    int
 	height   int

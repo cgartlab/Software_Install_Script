@@ -265,7 +265,7 @@ func (m *ConfigModel) savePackage() {
 		ID:       id,
 		Category: category,
 	})
-	config.Save()
+	_ = config.Save()
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -294,7 +294,7 @@ func (m *ConfigModel) updatePackage() {
 		ID:       id,
 		Category: category,
 	})
-	config.Save()
+	_ = config.Save()
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -315,7 +315,7 @@ func (m *ConfigModel) deletePackage() {
 	name := m.packages[m.selected].Name
 	cfg := config.Get()
 	cfg.RemoveSoftware(m.selected)
-	config.Save()
+	_ = config.Save()
 
 	// 刷新列表
 	m.packages = cfg.GetSoftwareList()
@@ -488,7 +488,7 @@ func RunWizard() {
 	fmt.Print("\nEnter choice (1-2): ")
 
 	var choice string
-	fmt.Scanln(&choice)
+	_, _ = fmt.Scanln(&choice)
 
 	if choice == "1" {
 		i18n.SetLanguage("en")

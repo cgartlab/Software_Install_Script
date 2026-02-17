@@ -44,7 +44,7 @@ var rootCmd = &cobra.Command{
 		// 询问是否启动交互式菜单
 		fmt.Print(ui.InfoStyle.Render("Launch interactive menu? [Y/n]: "))
 		var response string
-		fmt.Scanln(&response)
+		_, _ = fmt.Scanln(&response)
 		if response == "" || response == "y" || response == "Y" {
 			runInteractiveTUI()
 		}
