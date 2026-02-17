@@ -129,16 +129,28 @@ main() {
         print_color "$GREEN" "Created directory: $INSTALL_DIR"
     fi
     
-    # 构建下载 URL
-    local base_url="https://cgartlab.com/SwiftInstall"
+    # 构建下载 URL - 使用 GitHub Releases
+    local repo_owner="cgartlab"
+    local repo_name="SwiftInstall"
     local download_url
     local output_file
     
+    # 获取最新版本号
+    if [ "$VERSION" = "latest" ]; then
+        VERSION=$(curl -s "https://api.github.com/repos/$repo_owner/$repo_name/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        if [ -z "$VERSION" ]; then
+            print_color "$YELLOW" "Warning: Could not fetch latest version, using 'latest' as fallback"
+            VERSION="latest"
+        else
+            print_color "$BLUE" "Latest version: $VERSION"
+        fi
+    fi
+    
     if [ "$os" = "windows" ]; then
-        download_url="$base_url/releases/latest/sis-windows-$arch.exe"
+        download_url="https://github.com/$repo_owner/$repo_name/releases/download/$VERSION/sis-windows-$arch.exe"
         output_file="$INSTALL_DIR/sis.exe"
     else
-        download_url="$base_url/releases/latest/sis-$os-$arch"
+        download_url="https://github.com/$repo_owner/$repo_name/releases/download/$VERSION/sis-$os-$arch"
         output_file="$INSTALL_DIR/sis"
     fi
     

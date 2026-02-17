@@ -108,14 +108,24 @@ function Install-SwiftInstall {
     $arch = Get-Architecture
     Write-ColorOutput "Detected architecture: $arch" -Color Gray
     
-    # 构建下载 URL
-    $baseUrl = "https://cgartlab.com/SwiftInstall"
+    # 构建下载 URL - 使用 GitHub Releases
+    $repoOwner = "cgartlab"
+    $repoName = "SwiftInstall"
+    
     if ($Version -eq "latest") {
-        $downloadUrl = "$baseUrl/releases/latest/sis-windows-$arch.exe"
+        # 获取最新版本号
+        try {
+            $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoOwner/$repoName/releases/latest" -UseBasicParsing
+            $Version = $releaseInfo.tag_name
+            Write-ColorOutput "Latest version: $Version" -Color Gray
+        }
+        catch {
+            Write-ColorOutput "Warning: Could not fetch latest version, using 'latest' as fallback" -Color Yellow
+            $Version = "latest"
+        }
     }
-    else {
-        $downloadUrl = "$baseUrl/releases/download/$Version/sis-windows-$arch.exe"
-    }
+    
+    $downloadUrl = "https://github.com/$repoOwner/$repoName/releases/download/$Version/sis-windows-$arch.exe"
     
     # 下载文件
     $outputFile = "$InstallDir\sis.exe"
