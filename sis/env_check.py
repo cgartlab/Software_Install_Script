@@ -148,6 +148,8 @@ class EnvironmentChecker:
                     ['cmd', '/c', 'ver'],
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='ignore',
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 match = re.search(r'(\d+\.\d+\.\d+)', result.stdout)
@@ -166,6 +168,8 @@ class EnvironmentChecker:
                      '/v', 'CurrentBuild'],
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='ignore',
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 match = re.search(r'CurrentBuild\s+REG_SZ\s+(\S+)', result.stdout)
@@ -305,6 +309,8 @@ class EnvironmentChecker:
                  '/v', 'SystemStartOptions'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             if 'MININT' in result.stdout or 'WINPE' in result.stdout:
@@ -314,6 +320,8 @@ class EnvironmentChecker:
                 ['cmd', '/c', 'wmic', 'computersystem', 'get', 'model'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             if 'Virtual' in result.stdout or 'Sandbox' in result.stdout:
@@ -332,6 +340,8 @@ class EnvironmentChecker:
                 ['cmd', '/c', 'wmic', 'computersystem', 'get', 'manufacturer,model'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             for indicator in vm_indicators:
@@ -346,7 +356,9 @@ class EnvironmentChecker:
             result = subprocess.run(
                 ['system_profiler', 'SPHardwareDataType'],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding='utf-8',
+                errors='ignore'
             )
             vm_indicators = ['VMware', 'Parallels', 'VirtualBox', 'QEMU']
             for indicator in vm_indicators:
@@ -434,7 +446,9 @@ class EnvironmentChecker:
                 result = subprocess.run(
                     ['sw_vers', '-productVersion'],
                     capture_output=True,
-                    text=True
+                    text=True,
+                    encoding='utf-8',
+                    errors='ignore'
                 )
                 version_str = result.stdout.strip()
                 version_tuple = tuple(map(int, version_str.split('.')))
@@ -572,6 +586,8 @@ class EnvironmentChecker:
                 ['winget', '--version'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             )
             
@@ -619,6 +635,8 @@ class EnvironmentChecker:
                 ['winget', 'source', 'list'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             )
             
@@ -657,7 +675,9 @@ class EnvironmentChecker:
             result = subprocess.run(
                 ['brew', '--version'],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding='utf-8',
+                errors='ignore'
             )
             
             if result.returncode == 0:
@@ -856,6 +876,8 @@ class EnvironmentChecker:
                  'Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct | Select-Object displayName'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             

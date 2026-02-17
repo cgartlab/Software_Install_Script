@@ -314,7 +314,7 @@ Let's start by checking your system environment.
         console.print(f"\n[bold {Colors.PRIMARY}]{self._g('sandbox_title')}[/]\n")
         
         with console.status(f"[bold {Colors.PRIMARY}]{self._g('sandbox_desc')}[/]", spinner="dots"):
-            is_restricted, sandbox_info = get_sandbox_detector().detect(), get_sandbox_detector().detect().detect()
+            sandbox_info = get_sandbox_detector().detect()
         
         is_restricted = sandbox_info.is_sandbox or sandbox_info.is_container
         self.state.sandbox_detected = is_restricted
@@ -396,13 +396,95 @@ Let's start by checking your system environment.
             self.state.current_step = WizardStep.COMPLETION
             return
         
+        total = len(self.state.selected_packages)
+        
+        progress_table = Table(
+            title=f"{self._g('install_progress')} - {self._g('install_desc')}",
+            show_header=True,
+            header_style="bold cyan",
+            border_style="dim",
+            box=box.ROUNDED
+        )
+        progress_table.add_column("Package", style="white", min_width=25)
+        progress_table.add_column("Status", justify="center", width=15)
+        progress_table.add_column("Progress", justify="right", width=10)
+        progress_table.add_column("Source", style="dim", max_width=30)
+        
+        for pkg in self.state.selected_packages:
+            progress_table.add_row(
+                pkg.name,
+                f"[yellow]⏳ Pending[/yellow]",
+                "0%",
+                "-"
+            )
+        
         installer = get_batch_installer(max_workers=4 if self.state.install_parallel else 1)
         
-        session = installer.install_all(
-            self.state.selected_packages,
-            parallel=self.state.install_parallel,
-            stop_on_error=False
-        )
+        with Live(progress_table, console=console, refresh_per_second=4, vertical_overflow="visible") as live:
+            def update_progress():
+                while True:
+                    time.sleep(0.5)
+                    progress_table.rows.clear()
+                    progress_table.add_column("Package", style="white", min_width=25)
+                    progress_table.add_column("Status", justify="center", width=15)
+                    progress_table.add_column("Progress", justify="right", width=10)
+                    progress_table.add_column("Source", style="dim", max_width=30)
+                    
+                    for pkg in self.state.selected_packages:
+                        task = installer._session.tasks.get(pkg.id) if installer._session else None
+                        if task:
+                            status_colors = {
+                                "success": "green",
+                                "failed": "red",
+                                "skipped": "yellow",
+                                "pending": "dim",
+                                "installing": "cyan",
+                                "downloading": "blue",
+                                "cancelled": "red"
+                            }
+                            status_icons = {
+                                "success": "✓",
+                                "failed": "✗",
+                                "skipped": "⊘",
+                                "pending": "⏳",
+                                "installing": "⚙",
+                                "downloading": "⬇",
+                                "cancelled": "⊗"
+                            }
+                            status = task.status.value
+                            color = status_colors.get(status, "dim")
+                            icon = status_icons.get(status, "•")
+                            progress = f"{task.progress}%" if hasattr(task, 'progress') else "0%"
+                            source = task.download_url if (hasattr(task, 'download_url') and task.download_url) else "-"
+                            if len(source) > 30:
+                                source = source[:27] + "..."
+                            progress_table.add_row(
+                                pkg.name,
+                                f"[{color}]{icon} {status.capitalize()}[/{color}]",
+                                progress,
+                                source
+                            )
+                        else:
+                            progress_table.add_row(
+                                pkg.name,
+                                f"[dim]• Pending[/dim]",
+                                "0%",
+                                "-"
+                            )
+                    
+                    live.update(progress_table)
+                    
+                    if installer._session and installer._session.completed + installer._session.failed + installer._session.skipped >= total:
+                        break
+            
+            update_thread = threading.Thread(target=update_progress, daemon=True)
+            update_thread.start()
+            
+            session = installer.install_all(
+                self.state.selected_packages,
+                parallel=self.state.install_parallel,
+                stop_on_error=False
+            )
         
         display_install_progress(session, console)
         

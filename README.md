@@ -1,74 +1,78 @@
-# Software Install Script
+# SwiftInstall
 
-<div align="center">
-  <strong>常用软件批量安装脚本</strong>
-  <br><br>
-  基于 Winget (Windows) 和 Homebrew (macOS)
-</div>
-
----
-
-## 介绍
-
-这是我自用的一个 Windows 和 macOS 的软件批量安装脚本。
-分别基于 winget 和 homebrew 包管理器。
+<p align="center">
+  <strong>Cross-Platform Software Batch Installation Tool</strong><br>
+  <a href="./README.zh.md">简体中文</a> | <a href="./README.md">English</a>
+</p>
 
 ---
 
-## Windows 使用方法
+## Overview
 
-1. 将压缩包解压到同一个文件夹内
-2. 运行 `switch_winget_to_USTCsource.bat` 文件，将源切换为国内源（可选）
-3. 双击 `software_install.bat` 文件即可
+SwiftInstall is a modern CLI tool for batch software installation on Windows and macOS, featuring wizard-based installation, environment detection, and parallel processing.
 
-脚本会自动搜寻、下载，并安装列表文件中的软件。
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| 🎨 Wizard | Interactive TUI with bilingual support |
+| 🔍 Environment Check | Auto-detect system environment |
+| 🚀 Batch Install | 4-thread parallel installation |
+| ⚙️ Hot Refresh | Refresh env vars without restart |
+| 📝 Script Export | Export PowerShell/Bash/Python scripts |
+| 🛡️ Sandbox Detection | Auto-detect sandbox environments |
+
+## Quick Start
+
+| Platform | Command |
+|----------|---------|
+| Windows | `irm https://cgartlab.com/Software_Install_Script/install.py \| python3` |
+| macOS | `curl -fsSL https://cgartlab.com/Software_Install_Script/install.py \| python3` |
+
+## Usage
+
+| Command | Action |
+|---------|--------|
+| `sis wizard` | Start wizard |
+| `sis check` | Check environment |
+| `sis batch` | Batch install |
+| `sis refresh` | Refresh environment |
+| `sis export` | Export script |
+| `sis --help` | Show help |
+
+## Project Structure
+
+```
+Software_Install_Script/
+├── docs/           # Documentation
+├── scripts/        # Installation scripts
+│   ├── windows/
+│   └── macos/
+├── sis/            # Main Python package
+├── assets/         # Static assets
+├── tests/          # Test files
+├── install.py      # Online installer
+└── setup.py        # Package setup
+```
+
+## System Requirements
+
+| Platform | Requirements |
+|----------|--------------|
+| Windows | Windows 10/11, PowerShell 5.1+, Python 3.7+, Winget |
+| macOS | macOS 10.15+, Terminal, Python 3.7+, Homebrew |
+
+## Documentation
+
+- [Full Documentation](./README_CLI.md)
+- [Issues](https://github.com/cgartlab/Software_Install_Script/issues)
+
+## License
+
+[MIT License](LICENSE-2.0)
 
 ---
 
-## macOS 使用方法
-
-1. 将压缩包解压到同一个文件夹内
-2. 打开终端，将 `install_packages.sh` 文件拖入终端对话框中，回车即可
-
----
-
-## 软件列表
-
-### Windows
-
-可根据自己的需求，在终端中使用命令 `winget search 关键词` 来搜索安装包，将 ID 添加到 `software_list.txt` 文件中。
-
-### macOS
-
-可根据自己的需求，在终端中使用命令 `brew search 关键词` 来搜索安装包，将软件名添加到 `packages.txt` 文件中。
-
----
-
-## 项目文件说明
-
-### Windows 文件夹
-
-| 文件 | 说明 |
-|------|------|
-| `switch_winget_to_USTCsource.bat` | 切换为国内安装源 |
-| `software_list.txt` | 软件安装列表 |
-| `software_install.bat` | 安装执行脚本 |
-
-### macOS 文件夹
-
-| 文件 | 说明 |
-|------|------|
-| `packages.txt` | 软件安装列表 |
-| `install_packages.sh` | 安装执行脚本 |
-
----
-
-## 在线访问
-
-- **GitHub 仓库**：[https://github.com/cgartlab/Software_Install_Script](https://github.com/cgartlab/Software_Install_Script)
-
----
-
-## 许可证
-
-[MIT License](LICENSE)
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/cgartlab">cgartlab</a> · © 2026 SwiftInstall
+</p>

@@ -95,8 +95,10 @@ class Installer:
     def detect_language(self):
         """自动检测系统语言"""
         try:
-            # 获取系统语言
-            system_lang = locale.getdefaultlocale()[0]
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                system_lang = locale.getdefaultlocale()[0]
             if system_lang:
                 lang_code = system_lang.split('_')[0].lower()
                 if lang_code in SUPPORTED_LANGUAGES:
@@ -104,7 +106,6 @@ class Installer:
         except Exception as e:
             print_color(f"检测语言时出错: {e}", self.COLOR_WARNING)
         
-        # 默认返回英文
         return "en"
     
     def select_language(self):

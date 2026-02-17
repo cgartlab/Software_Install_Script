@@ -1,3 +1,3 @@
-﻿# SwiftInstall CLI Entry Point (PowerShell)
-Set-Location "C:\Users\cgart\Documents\Software_Install_Script"
-python -m sis.main @args
+# SwiftInstall CLI Wrapper
+$pythonPath = "C:\Users\cgart\AppData\Local\Microsoft\WindowsApps\python.exe"
+& $pythonPath -m sis.main @args

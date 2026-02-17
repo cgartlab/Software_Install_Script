@@ -175,38 +175,36 @@ def _config():
     ui = get_ui()
     config = Config()
     
+    menu_items = [
+        questionary.Choice(t('view_software_list'), value="1"),
+        questionary.Choice(t('add_software'), value="2"),
+        questionary.Choice(t('remove_software'), value="3"),
+        questionary.Choice(t('save_exit'), value="4"),
+        questionary.Choice(t('exit_no_save'), value="5"),
+    ]
+    
     while True:
         ui.clear_screen()
         console.print(get_rich_logo("compact"))
         console.print()
         
-        # Create configuration menu
-        menu_items = [
-            ("1", Icons.BULLET, t('view_software_list')),
-            ("2", Icons.BULLET, t('add_software')),
-            ("3", Icons.BULLET, t('remove_software')),
-            ("4", Icons.BULLET, t('save_exit')),
-            ("5", Icons.BULLET, t('exit_no_save')),
-        ]
+        choice = questionary.select(
+            "",
+            choices=menu_items,
+            default=None,
+            style=custom_style
+        ).ask()
         
-        menu_panel = ui.create_main_menu(menu_items)
-        console.print(Align.center(menu_panel))
-        console.print()
-        
-        choice = Prompt.ask(
-            f"[{Colors.PRIMARY}]{t('enter_choice')}[/]",
-            choices=["1", "2", "3", "4", "5"]
-        )
-        
+        if not choice:
+            break
+            
         if choice == "1":
-            # View software list
             console.print(f"\n[bold {Colors.PRIMARY}]{Icons.PACKAGE} {t('current_software_list')}[/]")
             table = ui.create_software_table(config.get_software_list(), show_status=False)
             console.print(table)
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
             
         elif choice == "2":
-            # Add software
             console.print(f"\n[bold {Colors.PRIMARY}]{Icons.DOWNLOAD} {t('add_new_software')}[/]")
             name = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_software_name')}[/]")
             if sys.platform.startswith('win32'):
@@ -224,7 +222,6 @@ def _config():
             time.sleep(0.5)
             
         elif choice == "3":
-            # Remove software
             console.print(f"\n[bold {Colors.PRIMARY}]{t('remove_software_title')}[/]")
             table = ui.create_software_table(config.get_software_list(), show_status=False)
             console.print(table)
@@ -237,13 +234,11 @@ def _config():
             time.sleep(0.5)
             
         elif choice == "4":
-            # Save and exit
             config.save()
             console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('config_saved')}[/]")
             break
             
         elif choice == "5":
-            # Exit without saving
             if Confirm.ask(f"[{Colors.WARNING}]{t('confirm_exit_no_save')}[/]"):
                 break
 

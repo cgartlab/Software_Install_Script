@@ -7,7 +7,7 @@ Provides color themes and visual styling management
 """
 
 from enum import Enum
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 
@@ -207,7 +207,7 @@ class ThemeManager:
 
 
 # Global theme manager instance
-_theme_manager: ThemeManager = None
+_theme_manager: Optional[ThemeManager] = None
 
 
 def get_theme_manager() -> ThemeManager:

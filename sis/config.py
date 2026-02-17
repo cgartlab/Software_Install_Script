@@ -9,8 +9,13 @@ import os
 import sys
 import yaml
 from rich.console import Console
+from rich.theme import Theme
 
-console = Console()
+custom_theme = Theme({
+    "error": "red bold",
+})
+
+console = Console(theme=custom_theme)
 
 class Config:
     """Configuration manager"""
@@ -35,7 +40,7 @@ class Config:
                     config = yaml.safe_load(f)
                     self.software_list = config.get('software', [])
             except Exception as e:
-                console.error(f"Error loading config: {e}")
+                console.print(f"[error]Error loading config: {e}[/error]")
                 self._create_default_config()
         else:
             self._create_default_config()
@@ -66,7 +71,7 @@ class Config:
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
         except Exception as e:
-            console.error(f"Error saving config: {e}")
+            console.print(f"[error]Error saving config: {e}[/error]")
     
     def get_software_list(self):
         """Get software list"""
@@ -119,5 +124,5 @@ class Config:
             self.save()
             return True
         except Exception as e:
-            console.error(f"Error importing legacy config: {e}")
+            console.print(f"[error]Error importing legacy config: {e}[/error]")
             return False

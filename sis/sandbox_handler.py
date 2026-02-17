@@ -145,6 +145,8 @@ class SandboxDetector:
                  '/v', 'SystemStartOptions'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             
@@ -155,6 +157,8 @@ class SandboxDetector:
                 ['cmd', '/c', 'wmic', 'computersystem', 'get', 'model'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             
@@ -180,6 +184,8 @@ class SandboxDetector:
                 ['cmd', '/c', 'wsl', '--status'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             return result.returncode == 0
@@ -197,6 +203,8 @@ class SandboxDetector:
                 ['docker', 'info'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             return result.returncode == 0
@@ -214,6 +222,8 @@ class SandboxDetector:
                 ['cmd', '/c', 'wmic', 'computersystem', 'get', 'manufacturer,model'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             
@@ -233,6 +243,8 @@ class SandboxDetector:
                  'Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object Manufacturer, Model'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             
