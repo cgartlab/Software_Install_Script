@@ -7,7 +7,13 @@ Software Install Script - Online Installer
 This script provides an interactive, one-line installation method
 for the Software Install Script (SIS) tool.
 
-Usage:
+Usage (Recommended - Using Custom Domain):
+  curl -fsSL https://cgartlab.com/Software_Install_Script/install.py | python3 -
+  
+  # Or for Windows PowerShell:
+  irm https://cgartlab.com/Software_Install_Script/install.py | python3 -
+
+Usage (GitHub Raw):
   curl -fsSL https://raw.githubusercontent.com/cgartlab/Software_Install_Script/main/install.py | python3 -
   
   # Or for Windows PowerShell:

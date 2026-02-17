@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Install Script - 软件批量安装脚本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .card .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-left: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .code-block .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .steps {
+            counter-reset: step;
+        }
+        
+        .step {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+        
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .step p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Software Install Script</h1>
+            <p>Windows 和 macOS 软件批量安装工具</p>
+        </div>
+        
+        <div class="card-grid">
+            <div class="card">
+                <h2>🖥️ 新 CLI 版本</h2>
+                <p>现代化的 Python 命令行工具，支持图形化向导、批量安装、环境检测等高级功能</p>
+                <div>
+                    <span class="tag">Windows</span>
+                    <span class="tag">macOS</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">向导式安装</span>
+                </div>
+                <br>
+                <a href="#cli-install" class="btn btn-primary">快速安装</a>
+                <a href="#cli-features" class="btn btn-secondary">功能特性</a>
+            </div>
+            
+            <div class="card">
+                <h2>📦 传统脚本版本</h2>
+                <p>简单的批处理脚本，基于 winget 和 homebrew，适合快速部署</p>
+                <div>
+                    <span class="tag">Windows</span>
+                    <span class="tag">macOS</span>
+                    <span class="tag">批处理</span>
+                    <span class="tag">简易</span>
+                </div>
+                <br>
+                <a href="#legacy-install" class="btn btn-primary">查看详情</a>
+                <a href="#legacy-features" class="btn btn-secondary">功能特性</a>
+            </div>
+            
+            <div class="card">
+                <h2>📚 文档与帮助</h2>
+                <p>完整的使用文档、常见问题解答和技术支持</p>
+                <div>
+                    <span class="tag">README</span>
+                    <span class="tag">FAQ</span>
+                    <span class="tag">GitHub</span>
+                    <span class="tag">Issues</span>
+                </div>
+                <br>
+                <a href="#documentation" class="btn btn-primary">查看文档</a>
+                <a href="#support" class="btn btn-secondary">获取帮助</a>
+            </div>
+        </div>
+        
+        <div class="section" id="cli-install">
+            <h2>⚡ CLI 版本 - 快速安装</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('windows-cli')">Windows</button>
+                <button class="tab" onclick="switchTab('macos-cli')">macOS</button>
+            </div>
+            
+            <div id="windows-cli" class="tab-content active">
+                <div class="steps">
+                    <div class="step">
+                        <h3>一键在线安装（推荐）</h3>
+                        <p>在 PowerShell 中运行以下命令：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>irm https://cgartlab.com/Software_Install_Script/install.py | python3</code>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>或者使用 PowerShell 脚本</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>irm https://cgartlab.com/Software_Install_Script/install_global.ps1 | iex</code>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>验证安装</h3>
+                        <p>安装完成后，在任意目录运行：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>sis --help</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="macos-cli" class="tab-content">
+                <div class="steps">
+                    <div class="step">
+                        <h3>一键在线安装（推荐）</h3>
+                        <p>在终端中运行以下命令：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>curl -fsSL https://cgartlab.com/Software_Install_Script/install.py | python3</code>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>或者使用 Shell 脚本</h3>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>curl -fsSL https://cgartlab.com/Software_Install_Script/macos_installer.sh | bash</code>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>验证安装</h3>
+                        <p>安装完成后，在任意目录运行：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>sis --help</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="cli-features">
+            <h2>✨ CLI 版本 - 功能特性</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h2>🎨 向导式安装</h2>
+                    <p>图形化的安装向导，支持中英文双语，操作简单直观</p>
+                    <div class="success">运行 <code>sis wizard</code> 启动向导</div>
+                </div>
+                
+                <div class="card">
+                    <h2>🔍 环境检测</h2>
+                    <p>自动检测系统环境、Python 版本、内存、磁盘空间、网络等</p>
+                    <div class="success">运行 <code>sis check</code> 检测环境</div>
+                </div>
+                
+                <div class="card">
+                    <h2>🚀 批量安装</h2>
+                    <p>支持并行批量安装，最多 4 线程同时下载安装</p>
+                    <div class="success">运行 <code>sis batch</code> 批量安装</div>
+                </div>
+                
+                <div class="card">
+                    <h2>⚙️ 环境变量热刷新</h2>
+                    <p>无需重启终端即可刷新环境变量，立即生效</p>
+                    <div class="success">运行 <code>sis refresh</code> 刷新环境</div>
+                </div>
+                
+                <div class="card">
+                    <h2>📝 自动化脚本</h2>
+                    <p>导出 PowerShell/Bash/Python 脚本，方便批量部署</p>
+                    <div class="success">运行 <code>sis export</code> 导出脚本</div>
+                </div>
+                
+                <div class="card">
+                    <h2>🛡️ 沙盒检测</h2>
+                    <p>自动检测沙盒环境，提供相应的处理方案</p>
+                    <div class="warning">在沙盒中运行时会有相应提示</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="legacy-install">
+            <h2>📦 传统脚本版本 - 使用说明</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('windows-legacy')">Windows</button>
+                <button class="tab" onclick="switchTab('macos-legacy')">macOS</button>
+            </div>
+            
+            <div id="windows-legacy" class="tab-content active">
+                <div class="steps">
+                    <div class="step">
+                        <h3>下载脚本</h3>
+                        <p>从 GitHub 下载 Windows 文件夹内的所有文件</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>切换安装源（可选）</h3>
+                        <p>运行 <code>switch_winget_to_USTCsource.bat</code> 切换到国内源</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>执行安装</h3>
+                        <p>双击 <code>software_install.bat</code> 开始安装</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="macos-legacy" class="tab-content">
+                <div class="steps">
+                    <div class="step">
+                        <h3>下载脚本</h3>
+                        <p>从 GitHub 下载 macOS 文件夹内的所有文件</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>执行安装</h3>
+                        <p>在终端中运行 <code>bash install_packages.sh</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="documentation">
+            <h2>📚 文档与资源</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h2>📖 完整 README</h2>
+                    <p>详细的功能说明、使用指南和 API 文档</p>
+                    <a href="https://github.com/cgartlab/Software_Install_Script/blob/main/README.md" class="btn btn-primary" target="_blank">查看 README</a>
+                </div>
+                
+                <div class="card">
+                    <h2>🎯 CLI 文档</h2>
+                    <p>专门的命令行工具使用文档</p>
+                    <a href="https://github.com/cgartlab/Software_Install_Script/blob/main/README_CLI.md" class="btn btn-primary" target="_blank">查看 CLI 文档</a>
+                </div>
+                
+                <div class="card">
+                    <h2>🐙 GitHub 仓库</h2>
+                    <p>访问源代码、提交 Issue、贡献代码</p>
+                    <a href="https://github.com/cgartlab/Software_Install_Script" class="btn btn-primary" target="_blank">访问 GitHub</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="support">
+            <h2>🔧 技术支持</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <h3>遇到问题？</h3>
+                    <p>首先查看 README 文档，常见问题通常在文档中有解答</p>
+                </div>
+                
+                <div class="step">
+                    <h3>提交 Issue</h3>
+                    <p>如果文档中没有找到答案，可以在 GitHub 上提交 Issue</p>
+                    <a href="https://github.com/cgartlab/Software_Install_Script/issues" class="btn btn-primary" target="_blank">提交 Issue</a>
+                </div>
+                
+                <div class="step">
+                    <h3>查看日志</h3>
+                    <p>CLI 版本提供了日志查看功能：</p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                        <code>sis logs</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Project maintained by <a href="https://github.com/cgartlab" target="_blank">cgartlab</a></p>
+            <p>Hosted on GitHub Pages</p>
+            <p>© 2024 Software Install Script. All rights reserved.</p>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function copyCode(button) {
+            const codeBlock = button.parentElement;
+            const code = codeBlock.querySelector('code').textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制!';
+                button.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+        
+        window.addEventListener('hashchange', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const element = document.querySelector(hash);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
