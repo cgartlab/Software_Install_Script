@@ -10,6 +10,7 @@ import click
 import sys
 import os
 import time
+from typing import Optional, List, Dict, Any
 from rich.console import Console
 from rich.table import Table
 from rich.prompt import Prompt, Confirm
@@ -23,9 +24,15 @@ from questionary import Style
 
 from sis.installer import WindowsInstaller, MacOSInstaller
 from sis.config import Config
-from sis.i18n import t
+from sis.i18n import t, get_i18n, LANG_EN, LANG_ZH
 from sis.ui import get_ui, Colors, Icons, UIComponents
 from sis.logo import get_rich_logo, get_brand_tagline
+from sis.env_check import run_pre_install_check, display_check_results
+from sis.error_handler import get_error_manager, get_logger, display_error_table
+from sis.env_manager import get_env_manager, display_env_table, hot_refresh_environment
+from sis.sandbox_handler import check_sandbox_environment, display_sandbox_info
+from sis.batch_installer import get_batch_installer, display_install_progress, SoftwarePackage, InstallPriority, AutomationScript
+from sis.guided_ui import run_guided_installation, QuickInstall
 
 console = Console()
 
@@ -622,6 +629,161 @@ def tui():
         elif choice_index == 4:
             console.print(f"\n[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('exiting')}[/]")
             break
+
+
+@cli.command()
+def wizard():
+    """Launch guided installation wizard"""
+    run_guided_installation()
+
+
+@cli.command()
+def check():
+    """Run system environment check"""
+    console.print(f"\n[bold {Colors.PRIMARY}]System Environment Check[/bold {Colors.PRIMARY}]\n")
+    
+    with console.status("[bold cyan]Checking system environment...", spinner="dots"):
+        passed, system_info, results = run_pre_install_check()
+    
+    display_check_results(results, console)
+    
+    console.print(f"\n[bold {'green' if passed else 'red'}]{'All checks passed!' if passed else 'Some issues detected.'}[/bold {'green' if passed else 'red'}]")
+    
+    is_restricted, sandbox_info = check_sandbox_environment()
+    if is_restricted:
+        console.print()
+        display_sandbox_info(sandbox_info, console)
+
+
+@cli.command()
+@click.option('--parallel/--sequential', default=True, help='Use parallel installation')
+@click.option('--config', '-c', 'config_file', help='Configuration file path')
+def batch(parallel: bool, config_file: Optional[str]):
+    """Run batch installation"""
+    if config_file:
+        success = QuickInstall.install_from_file(config_file)
+    else:
+        config = Config()
+        software_list = config.get_software_list()
+        
+        if not software_list:
+            console.print("[yellow]No software configured. Use 'sis config' to add software.[/yellow]")
+            return
+        
+        packages = [
+            SoftwarePackage(
+                id=s.get('id', s.get('package', '')),
+                name=s.get('name', s.get('id', '')),
+                category=s.get('category', 'Other'),
+                priority=InstallPriority.NORMAL
+            )
+            for s in software_list
+        ]
+        
+        success = QuickInstall.install_from_list(
+            [{'id': p.id, 'name': p.name, 'category': p.category} for p in packages],
+            parallel=parallel
+        )
+    
+    if success:
+        console.print("\n[green]Installation completed successfully![/green]")
+    else:
+        console.print("\n[yellow]Installation completed with some errors.[/yellow]")
+
+
+@cli.command()
+@click.option('--format', '-f', 'output_format', type=click.Choice(['powershell', 'bash', 'python', 'json']), 
+              default='powershell', help='Output format')
+@click.option('--output', '-o', 'output_path', help='Output file path')
+def export(output_format: str, output_path: Optional[str]):
+    """Export automation script"""
+    config = Config()
+    software_list = config.get_software_list()
+    
+    if not software_list:
+        console.print("[yellow]No software configured. Use 'sis config' to add software.[/yellow]")
+        return
+    
+    packages = [
+        SoftwarePackage(
+            id=s.get('id', s.get('package', '')),
+            name=s.get('name', s.get('id', '')),
+            category=s.get('category', 'Other'),
+            priority=InstallPriority.NORMAL
+        )
+        for s in software_list
+    ]
+    
+    if output_format == 'json':
+        if output_path:
+            AutomationScript.generate_config_file(packages, output_path)
+            console.print(f"[green]Configuration exported to: {output_path}[/green]")
+        else:
+            import json
+            console.print(json.dumps([{'id': p.id, 'name': p.name, 'category': p.category} for p in packages], indent=2))
+    else:
+        script = AutomationScript.generate_script(packages, output_format, output_path)
+        if output_path:
+            console.print(f"[green]Script exported to: {output_path}[/green]")
+        else:
+            console.print(script)
+
+
+@cli.command()
+def refresh():
+    """Refresh environment variables without restart"""
+    console.print("[cyan]Refreshing environment variables...[/cyan]")
+    
+    env_manager = get_env_manager()
+    success = hot_refresh_environment()
+    
+    if success:
+        console.print("[green]Environment variables refreshed successfully![/green]")
+        
+        modified = env_manager.get_modified_vars()
+        if modified:
+            display_env_table(env_manager, console)
+    else:
+        console.print("[red]Failed to refresh environment variables.[/red]")
+
+
+@cli.command()
+def logs():
+    """View installation logs"""
+    logger = get_logger()
+    log_dir = logger.LOG_DIR
+    
+    console.print(f"[cyan]Log directory: {log_dir}[/cyan]\n")
+    
+    log_files = sorted(log_dir.glob("*.log"), key=lambda p: p.stat().st_mtime, reverse=True)
+    
+    if not log_files:
+        console.print("[yellow]No log files found.[/yellow]")
+        return
+    
+    table = Table(title="Available Log Files", box=box.ROUNDED)
+    table.add_column("#", style="dim", width=4)
+    table.add_column("File", style="white")
+    table.add_column("Size", style="cyan", justify="right")
+    table.add_column("Modified", style="dim")
+    
+    for i, log_file in enumerate(log_files[:10], 1):
+        size = log_file.stat().st_size
+        mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(log_file.stat().st_mtime))
+        table.add_row(str(i), log_file.name, f"{size:,} bytes", mtime)
+    
+    console.print(table)
+
+
+@cli.command()
+@click.argument('locale', type=click.Choice(['en', 'zh']))
+def lang(locale: str):
+    """Set language preference"""
+    i18n = get_i18n()
+    i18n.set_language(locale)
+    
+    lang_names = {'en': 'English', 'zh': '中文'}
+    console.print(f"[green]Language set to: {lang_names.get(locale, locale)}[/green]")
 
 
 if __name__ == '__main__':
