@@ -33,6 +33,7 @@ from sis.env_manager import get_env_manager, display_env_table, hot_refresh_envi
 from sis.sandbox_handler import check_sandbox_environment, display_sandbox_info
 from sis.batch_installer import get_batch_installer, display_install_progress, SoftwarePackage, InstallPriority, AutomationScript
 from sis.guided_ui import run_guided_installation, QuickInstall
+from sis.update_checker import get_update_checker
 
 console = Console()
 
@@ -70,6 +71,9 @@ def _show_splash_screen():
     
     # Loading animation
     with console.status(f"[bold {Colors.PRIMARY}]Initializing SwiftInstall...", spinner="dots"):
+        # Check for updates in background
+        update_checker = get_update_checker()
+        update_checker.check_and_notify()
         time.sleep(1.5)
     
     console.print()
@@ -136,6 +140,34 @@ def _install():
     
     # Run installation
     installer.install_all()
+
+
+def _uninstall():
+    """Uninstall software from configuration (internal function)"""
+    ui = get_ui()
+    config = Config()
+    
+    # Detect platform
+    if sys.platform.startswith('win32'):
+        installer = WindowsInstaller(config)
+    elif sys.platform.startswith('darwin'):
+        installer = MacOSInstaller(config)
+    else:
+        console.print(f"[{Colors.ERROR}]Unsupported platform[/]")
+        return
+    
+    # Show software list
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.PACKAGE} {t('software_to_uninstall')}[/]")
+    table = ui.create_software_table(config.get_software_list(), show_status=False)
+    console.print(table)
+    
+    # Confirm uninstallation
+    if not Confirm.ask(f"\n[{Colors.PRIMARY}]{t('confirm_uninstall')}[/]"):
+        console.print(f"[{Colors.WARNING}]{t('uninstallation_cancelled')}[/]")
+        return
+    
+    # Run uninstallation
+    installer.uninstall_all()
 
 
 def _config():
@@ -572,6 +604,13 @@ def install():
 
 
 @cli.command()
+def uninstall():
+    """Uninstall software from configuration"""
+    _show_splash_screen()
+    _uninstall()
+
+
+@cli.command()
 def config():
     """Configure software list"""
     _config()
@@ -593,6 +632,7 @@ def tui():
         
         menu_options = [
             f"{Icons.INSTALL} {t('menu_install')}",
+            f"{Icons.UNINSTALL} {t('menu_uninstall')}",
             f"{Icons.CONFIG} {t('menu_config')}",
             f"{Icons.SEARCH} {t('menu_search')}",
             f"{Icons.SETTINGS} {t('menu_settings')}",
@@ -619,14 +659,17 @@ def tui():
             _install()
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
         elif choice_index == 1:
-            _config()
+            _uninstall()
+            Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
         elif choice_index == 2:
+            _config()
+        elif choice_index == 3:
             _search_software()
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
-        elif choice_index == 3:
+        elif choice_index == 4:
             console.print(f"\n[bold {Colors.WARNING}]{Icons.SETTINGS} {t('settings_not_implemented')}[/]")
             Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
-        elif choice_index == 4:
+        elif choice_index == 5:
             console.print(f"\n[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('exiting')}[/]")
             break
 
@@ -786,5 +829,32 @@ def lang(locale: str):
     console.print(f"[green]Language set to: {lang_names.get(locale, locale)}[/green]")
 
 
+@cli.command()
+def update():
+    """Check for updates manually"""
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.UPDATE} Checking for updates...[/bold {Colors.PRIMARY}]")
+    
+    update_checker = get_update_checker()
+    update_checker.check_and_notify(force=True)
+    
+    # Also show cache info
+    import json
+    import os
+    cache_file = update_checker._get_cache_file()
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, 'r', encoding='utf-8') as f:
+                cache = json.load(f)
+            console.print(f"\n[dim {Colors.TEXT_MUTED}]Last check: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(cache.get('last_check', 0)))}[/dim {Colors.TEXT_MUTED}]")
+        except Exception:
+            pass
+
+
 if __name__ == '__main__':
     cli()
+
+    # Automatic update check when script starts
+    # This will run after the main function returns
+    # but we already check during splash screen
+    # So we don't need it here
+

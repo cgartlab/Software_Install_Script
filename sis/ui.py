@@ -53,6 +53,7 @@ class Icons:
     CONFIG = "⚙️"
     SEARCH = "🔍"
     SETTINGS = "🛠️"
+    UNINSTALL = "🗑️"
     EXIT = "🚪"
     BACK = "◀"
     
@@ -78,6 +79,12 @@ class Icons:
     BULLET = "•"
     STAR = "★"
     HEART = "♥"
+    
+    # Update icon
+    UPDATE = "🔄"
+    
+    # Action icons
+    REFRESH = "🔃"
 
 
 class UIComponents:

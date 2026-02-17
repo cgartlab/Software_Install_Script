@@ -15,6 +15,7 @@ sis/main.py
 sis/sandbox_handler.py
 sis/themes.py
 sis/ui.py
+sis/update_checker.py
 software_install_script.egg-info/PKG-INFO
 software_install_script.egg-info/SOURCES.txt
 software_install_script.egg-info/dependency_links.txt

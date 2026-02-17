@@ -2,3 +2,5 @@ click
 rich
 pyyaml
 colorama
+questionary
+httpx

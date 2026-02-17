@@ -135,6 +135,26 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         
         # Settings
         "settings_not_implemented": "Settings feature coming soon!",
+        
+        # Uninstall
+        "menu_uninstall": "Uninstall Software",
+        "software_to_uninstall": "Software to Uninstall",
+        "confirm_uninstall": "Do you want to proceed with uninstallation?",
+        "uninstallation_cancelled": "Uninstallation cancelled.",
+        "uninstalling": "Uninstalling",
+        "uninstallation_complete": "Uninstallation complete!",
+        
+        # Update
+        "update_available": "Update Available!",
+        "current_version": "Current Version",
+        "latest_version": "Latest Version",
+        "download_from": "Download From",
+        "github_releases": "GitHub Releases",
+        "update_hint": "Run 'sis update' to check for updates manually",
+        "update_notification": "Update Notification",
+        "checking_updates": "Checking for updates...",
+        "no_updates_available": "No updates available.",
+        "update_check_failed": "Failed to check for updates.",
     },
     LANG_ZH: {
         # Brand
@@ -229,6 +249,26 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         
         # Settings
         "settings_not_implemented": "设置功能即将推出！",
+        
+        # Uninstall
+        "menu_uninstall": "卸载软件",
+        "software_to_uninstall": "待卸载软件",
+        "confirm_uninstall": "是否要继续卸载？",
+        "uninstallation_cancelled": "卸载已取消。",
+        "uninstalling": "正在卸载",
+        "uninstallation_complete": "卸载完成！",
+        
+        # Update
+        "update_available": "发现新版本！",
+        "current_version": "当前版本",
+        "latest_version": "最新版本",
+        "download_from": "下载地址",
+        "github_releases": "GitHub 发布页",
+        "update_hint": "运行 'sis update' 手动检查更新",
+        "update_notification": "更新通知",
+        "checking_updates": "正在检查更新...",
+        "no_updates_available": "暂无更新。",
+        "update_check_failed": "检查更新失败。",
     }
 }
 
