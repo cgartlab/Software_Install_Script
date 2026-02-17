@@ -67,7 +67,10 @@ try {
         throw "pip install failed"
     }
     
-    & .\install_global.ps1
+    # Unblock the script to avoid execution policy issues
+    Unblock-File -Path ".\install_global.ps1" -ErrorAction SilentlyContinue
+    # Run the script with bypassed execution policy
+    powershell -ExecutionPolicy Bypass -File ".\install_global.ps1"
     if ($LASTEXITCODE -ne 0) {
         throw "global install failed"
     }
