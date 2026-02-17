@@ -48,9 +48,33 @@ cd Software_Install_Script
 # 安装依赖
 pip install -r requirements.txt
 
+# 安装全局命令（可选，安装后可在任意目录使用 'sis' 命令）
+powershell -ExecutionPolicy Bypass -File install_global.ps1
+
 # 启动图形化向导
+sis wizard
+# 或
 python -m sis.main wizard
 ```
+
+### 全局命令安装
+
+安装后，`sis` 命令可以在任意目录下使用：
+
+```powershell
+# Windows - 运行安装脚本
+powershell -ExecutionPolicy Bypass -File install_global.ps1
+
+# 或使用批处理脚本
+install_global.bat
+
+# 安装后重启终端，即可全局使用
+sis --help
+sis wizard
+sis check
+```
+
+> **注意**：安装后需要重启终端或运行 `$env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')` 刷新环境变量。
 
 ---
 
