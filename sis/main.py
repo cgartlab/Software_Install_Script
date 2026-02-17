@@ -2,25 +2,96 @@
 # -*- coding: utf-8 -*-
 
 """
-Main CLI module for Software Install Script
+Main CLI module for SwiftInstall
+A cross-platform software installation tool with enhanced visual interface
 """
 
 import click
 import sys
 import os
+import time
 from rich.console import Console
 from rich.table import Table
 from rich.prompt import Prompt, Confirm
-from rich import print as rprint
+from rich.panel import Panel
+from rich.text import Text
+from rich.align import Align
+from rich import box
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 
 from sis.installer import WindowsInstaller, MacOSInstaller
 from sis.config import Config
 from sis.i18n import t
+from sis.ui import get_ui, Colors, Icons, UIComponents
+from sis.logo import get_rich_logo, get_brand_tagline
 
 console = Console()
 
+
+def _show_splash_screen():
+    """Display the splash screen with logo and loading animation"""
+    ui = get_ui()
+    ui.clear_screen()
+    
+    # Print logo
+    logo = get_rich_logo("full")
+    console.print(logo)
+    console.print()
+    
+    # Show tagline
+    tagline = Text(get_brand_tagline(), style=f"dim {Colors.TEXT_MUTED}")
+    console.print(Align.center(tagline))
+    console.print()
+    
+    # System check
+    checks = _perform_system_check()
+    ui.show_system_check(checks)
+    
+    # Loading animation
+    with console.status(f"[bold {Colors.PRIMARY}]Initializing SwiftInstall...", spinner="dots"):
+        time.sleep(1.5)
+    
+    console.print()
+
+
+def _perform_system_check() -> list:
+    """Perform system checks and return results"""
+    import subprocess
+    checks = []
+    
+    # Check platform
+    if sys.platform.startswith('darwin'):
+        checks.append(("Platform", "ok", "macOS detected"))
+        # Check Homebrew
+        try:
+            result = subprocess.run(['brew', '--version'], capture_output=True, text=True)
+            if result.returncode == 0:
+                checks.append(("Homebrew", "ok", "Available"))
+            else:
+                checks.append(("Homebrew", "warning", "Not installed"))
+        except:
+            checks.append(("Homebrew", "warning", "Not found"))
+    
+    elif sys.platform.startswith('win32'):
+        checks.append(("Platform", "ok", "Windows detected"))
+        # Check Winget
+        try:
+            result = subprocess.run(['winget', '--version'], capture_output=True, text=True)
+            if result.returncode == 0:
+                checks.append(("Winget", "ok", "Available"))
+            else:
+                checks.append(("Winget", "warning", "Not installed"))
+        except:
+            checks.append(("Winget", "warning", "Not found"))
+    else:
+        checks.append(("Platform", "error", "Unsupported"))
+    
+    return checks
+
+
 def _install():
     """Install software from configuration (internal function)"""
+    ui = get_ui()
     config = Config()
     
     # Detect platform
@@ -29,114 +100,114 @@ def _install():
     elif sys.platform.startswith('darwin'):
         installer = MacOSInstaller(config)
     else:
-        console.error("Unsupported platform")
+        console.print(f"[{Colors.ERROR}]Unsupported platform[/]")
         return
     
     # Show software list
-    console.print("\n[bold cyan]Software to install:[/bold cyan]")
-    table = Table(show_header=True, header_style="bold green")
-    table.add_column("Name", style="dim")
-    table.add_column("ID")
-    table.add_column("Category")
-    
-    for software in config.get_software_list():
-        table.add_row(
-            software.get('name', 'N/A'),
-            software.get('id', software.get('package', 'N/A')),
-            software.get('category', 'N/A')
-        )
-    
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.PACKAGE} {t('software_to_install')}[/]")
+    table = ui.create_software_table(config.get_software_list(), show_status=False)
     console.print(table)
     
     # Confirm installation
-    if not Confirm.ask("\nDo you want to proceed with installation?"):
-        console.print("Installation cancelled.")
+    if not Confirm.ask(f"\n[{Colors.PRIMARY}]{t('confirm_proceed')}[/]"):
+        console.print(f"[{Colors.WARNING}]{t('installation_cancelled')}[/]")
         return
     
     # Run installation
     installer.install_all()
 
+
 def _config():
     """Configure software list (internal function)"""
+    ui = get_ui()
     config = Config()
     
     while True:
-        console.print("\n[bold cyan]Configuration Menu[/bold cyan]")
-        console.print("1. View current software list")
-        console.print("2. Add software")
-        console.print("3. Remove software")
-        console.print("4. Save and exit")
-        console.print("5. Exit without saving")
+        ui.clear_screen()
+        console.print(get_rich_logo("compact"))
+        console.print()
         
-        choice = Prompt.ask("Enter your choice", choices=["1", "2", "3", "4", "5"])
+        # Create configuration menu
+        menu_items = [
+            ("1", Icons.BULLET, t('view_software_list')),
+            ("2", Icons.BULLET, t('add_software')),
+            ("3", Icons.BULLET, t('remove_software')),
+            ("4", Icons.BULLET, t('save_exit')),
+            ("5", Icons.BULLET, t('exit_no_save')),
+        ]
+        
+        menu_panel = ui.create_main_menu(menu_items)
+        console.print(Align.center(menu_panel))
+        console.print()
+        
+        choice = Prompt.ask(
+            f"[{Colors.PRIMARY}]{t('enter_choice')}[/]",
+            choices=["1", "2", "3", "4", "5"]
+        )
         
         if choice == "1":
             # View software list
-            console.print("\n[bold cyan]Current software list:[/bold cyan]")
-            table = Table(show_header=True, header_style="bold green")
-            table.add_column("#", style="dim")
-            table.add_column("Name", style="dim")
-            table.add_column("ID/Package")
-            table.add_column("Category")
-            
-            for i, software in enumerate(config.get_software_list(), 1):
-                table.add_row(
-                    str(i),
-                    software.get('name', 'N/A'),
-                    software.get('id', software.get('package', 'N/A')),
-                    software.get('category', 'N/A')
-                )
-            
+            console.print(f"\n[bold {Colors.PRIMARY}]{Icons.PACKAGE} {t('current_software_list')}[/]")
+            table = ui.create_software_table(config.get_software_list(), show_status=False)
             console.print(table)
+            Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
             
         elif choice == "2":
             # Add software
-            name = Prompt.ask("Enter software name")
+            console.print(f"\n[bold {Colors.PRIMARY}]{Icons.DOWNLOAD} {t('add_new_software')}[/]")
+            name = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_software_name')}[/]")
             if sys.platform.startswith('win32'):
-                software_id = Prompt.ask("Enter winget ID")
+                software_id = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_winget_id')}[/]")
             else:
-                software_id = Prompt.ask("Enter brew package name")
-            category = Prompt.ask("Enter category", default="Other")
+                software_id = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_brew_name')}[/]")
+            category = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_category')}[/]", default="Other")
             
             if sys.platform.startswith('win32'):
                 config.add_software({'name': name, 'id': software_id, 'category': category})
             else:
                 config.add_software({'name': name, 'package': software_id, 'category': category})
             
-            console.print("[green]Software added successfully![/green]")
+            console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('software_added')}[/]")
+            time.sleep(0.5)
             
         elif choice == "3":
             # Remove software
-            index = Prompt.ask("Enter software number to remove", convert=int)
+            console.print(f"\n[bold {Colors.PRIMARY}]{t('remove_software_title')}[/]")
+            table = ui.create_software_table(config.get_software_list(), show_status=False)
+            console.print(table)
+            
+            index = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_number_remove')}[/]", convert=int)
             if config.remove_software(index - 1):
-                console.print("[green]Software removed successfully![/green]")
+                console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('software_removed')}[/]")
             else:
-                console.print("[red]Invalid software number![/red]")
-                
+                console.print(f"[bold {Colors.ERROR}]{Icons.ERROR} {t('invalid_number')}[/]")
+            time.sleep(0.5)
+            
         elif choice == "4":
             # Save and exit
             config.save()
-            console.print("[green]Configuration saved successfully![/green]")
+            console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('config_saved')}[/]")
             break
             
         elif choice == "5":
             # Exit without saving
-            if Confirm.ask("Are you sure you want to exit without saving?"):
+            if Confirm.ask(f"[{Colors.WARNING}]{t('confirm_exit_no_save')}[/]"):
                 break
+
 
 def _search_software():
     """Search software using available package managers"""
-    console.print(f"\n[bold cyan]{t('search_software')}[/bold cyan]")
+    ui = get_ui()
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.SEARCH} {t('search_software')}[/]")
     
     # Get search query from user
-    query = Prompt.ask(t('enter_search_query'))
+    query = Prompt.ask(f"[{Colors.SECONDARY}]{t('enter_search_query')}[/]")
     if not query:
-        console.print(f"[yellow]{t('search_query_empty')}[/yellow]")
+        console.print(f"[{Colors.WARNING}]{t('search_query_empty')}[/]")
         return
     
     # Detect platform and available package managers
     if sys.platform.startswith('darwin'):
-        # macOS: Check for Homebrew
         import subprocess
         try:
             result = subprocess.run(
@@ -145,15 +216,14 @@ def _search_software():
                 text=True
             )
             if result.returncode == 0:
-                console.print(f"[cyan]{t('using_homebrew')}[/cyan]")
+                console.print(f"[{Colors.PRIMARY}]{t('using_homebrew')}[/]")
                 _search_with_brew(query)
             else:
-                console.print(f"[red]{t('brew_not_available')}[/red]")
+                console.print(f"[{Colors.ERROR}]{t('brew_not_available')}[/]")
         except Exception as e:
-            console.print(f"[red]{t('error_checking_brew')}: {e}[/red]")
+            console.print(f"[{Colors.ERROR}]{t('error_checking_brew')}: {e}[/]")
     
     elif sys.platform.startswith('win32'):
-        # Windows: Check for Winget
         import subprocess
         try:
             result = subprocess.run(
@@ -162,30 +232,30 @@ def _search_software():
                 text=True
             )
             if result.returncode == 0:
-                console.print(f"[cyan]{t('using_winget')}[/cyan]")
+                console.print(f"[{Colors.PRIMARY}]{t('using_winget')}[/]")
                 _search_with_winget(query)
             else:
-                console.print(f"[red]{t('winget_not_available')}[/red]")
+                console.print(f"[{Colors.ERROR}]{t('winget_not_available')}[/]")
         except Exception as e:
-            console.print(f"[red]{t('error_checking_winget')}: {e}[/red]")
-    
+            console.print(f"[{Colors.ERROR}]{t('error_checking_winget')}: {e}[/]")
     else:
-        console.print(f"[red]{t('unsupported_platform')}[/red]")
+        console.print(f"[{Colors.ERROR}]{t('unsupported_platform')}[/]")
+
 
 def _search_with_brew(query):
     """Search software using Homebrew"""
     import subprocess
     
     try:
-        # Run brew search command
-        result = subprocess.run(
-            ['brew', 'search', '--desc', query],
-            capture_output=True,
-            text=True
-        )
+        with console.status(f"[bold {Colors.PRIMARY}]{t('searching')}...", spinner="dots"):
+            result = subprocess.run(
+                ['brew', 'search', '--desc', query],
+                capture_output=True,
+                text=True
+            )
         
         if result.returncode != 0:
-            console.print("[yellow]No results found or error searching[/yellow]")
+            console.print(f"[{Colors.WARNING}]{t('no_results')}[/]")
             if result.stderr:
                 console.print(f"[dim]{result.stderr}[/dim]")
             return
@@ -198,18 +268,15 @@ def _search_with_brew(query):
             if not line or line.startswith('==>') or line.startswith('Warning:'):
                 continue
             
-            # Parse Homebrew search result format: package_name: (Description)
             if ':' in line:
                 parts = line.split(':', 1)
                 if len(parts) == 2:
                     package_name = parts[0].strip()
                     description_part = parts[1].strip()
-                    # Extract description from parentheses
                     if description_part.startswith('(') and description_part.endswith(')'):
                         description = description_part[1:-1].strip()
                     else:
                         description = description_part
-                    # Check if package is installed
                     is_installed = _is_brew_package_installed(package_name)
                     results.append({
                         'name': package_name,
@@ -217,11 +284,11 @@ def _search_with_brew(query):
                         'installed': is_installed
                     })
         
-        # Display results
         _display_search_results(results)
         
     except Exception as e:
-        console.print(f"[red]Error searching with Homebrew: {e}[/red]")
+        console.print(f"[{Colors.ERROR}]{t('error_searching')}: {e}[/]")
+
 
 def _is_brew_package_installed(package_name):
     """Check if a Homebrew package is installed"""
@@ -236,20 +303,21 @@ def _is_brew_package_installed(package_name):
     except:
         return False
 
+
 def _search_with_winget(query):
     """Search software using Winget"""
     import subprocess
     
     try:
-        # Run winget search command
-        result = subprocess.run(
-            ['winget', 'search', query],
-            capture_output=True,
-            text=True
-        )
+        with console.status(f"[bold {Colors.PRIMARY}]{t('searching')}...", spinner="dots"):
+            result = subprocess.run(
+                ['winget', 'search', query],
+                capture_output=True,
+                text=True
+            )
         
         if result.returncode != 0:
-            console.print("[yellow]No results found or error searching[/yellow]")
+            console.print(f"[{Colors.WARNING}]{t('no_results')}[/]")
             if result.stderr:
                 console.print(f"[dim]{result.stderr}[/dim]")
             return
@@ -258,7 +326,6 @@ def _search_with_winget(query):
         results = []
         lines = result.stdout.strip().split('\n')
         
-        # Skip header lines
         header_skipped = False
         for line in lines:
             if not header_skipped:
@@ -269,16 +336,12 @@ def _search_with_winget(query):
             if not line:
                 continue
             
-            # Parse winget output format
-            # Example: Microsoft.VisualStudioCode   Visual Studio Code   Microsoft Corporation    1.83.1
             parts = line.split('\t')
             if len(parts) >= 3:
-                # Handle cases where description might contain tabs
                 software_id = parts[0].strip()
                 name = parts[1].strip()
                 publisher = parts[2].strip() if len(parts) > 2 else ''
                 
-                # Check if software is installed
                 is_installed = _is_winget_package_installed(software_id)
                 results.append({
                     'name': name,
@@ -287,11 +350,11 @@ def _search_with_winget(query):
                     'installed': is_installed
                 })
         
-        # Display results
         _display_search_results(results)
         
     except Exception as e:
-        console.print(f"[red]Error searching with Winget: {e}[/red]")
+        console.print(f"[{Colors.ERROR}]{t('error_searching')}: {e}[/]")
+
 
 def _is_winget_package_installed(software_id):
     """Check if a Winget package is installed"""
@@ -302,94 +365,91 @@ def _is_winget_package_installed(software_id):
             capture_output=True,
             text=True
         )
-        # Check if the output contains the software ID
         return software_id in result.stdout
     except:
         return False
 
+
 def _display_search_results(results):
     """Display search results in an interactive interface"""
+    ui = get_ui()
+    
     if not results:
-        console.print(f"[yellow]{t('no_results')}[/yellow]")
+        console.print(f"[{Colors.WARNING}]{t('no_results')}[/]")
         return
     
-    console.print(f"\n[bold cyan]{t('found_results', count=len(results))}[/bold cyan]")
+    console.print(f"\n[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('found_results', count=len(results))}[/]")
     
-    # First display results in a table
-    table = Table(show_header=True, header_style="bold green")
-    table.add_column("#", style="dim", width=3)
-    table.add_column("Name", style="dim", width=20)
-    table.add_column("Description", max_width=50)
-    table.add_column("ID/Package", style="dim", width=20)
-    table.add_column("Installed", justify="center", width=10)
+    # Create results table
+    table = Table(
+        show_header=True,
+        header_style=f"bold {Colors.PRIMARY_BRIGHT}",
+        border_style=Colors.TEXT_DIM,
+        box=box.ROUNDED
+    )
+    
+    table.add_column("#", style=Colors.TEXT_DIM, width=3, justify="center")
+    table.add_column("Name", style=f"bold {Colors.TEXT}", min_width=20)
+    table.add_column("Description", max_width=40)
+    table.add_column("ID/Package", style=Colors.SECONDARY_BRIGHT, min_width=15)
+    table.add_column("Status", justify="center", width=12)
     
     for i, item in enumerate(results, 1):
-        installed_status = "✓" if item.get('installed') else "✗"
-        name = item.get('name', 'N/A')
-        description = item.get('description', 'N/A')
-        package_id = item.get('id', item.get('name', 'N/A'))
+        installed_status = f"{Icons.INSTALLED} {t('installed')}" if item.get('installed') else f"{Icons.NOT_INSTALLED} {t('available')}"
+        status_style = Colors.SUCCESS if item.get('installed') else Colors.TEXT_DIM
+        
         table.add_row(
             str(i),
-            name,
-            description,
-            package_id,
+            item.get('name', 'N/A'),
+            item.get('description', 'N/A')[:50],
+            item.get('id', item.get('name', 'N/A')),
             installed_status
         )
     
     console.print(table)
-    console.print(f"[dim]{t('how_to_select')}[/dim]")
-    console.print(f"[dim]{t('hint_arrow_keys')}[/dim]")
-    console.print(f"[dim]{t('hint_enter')}[/dim]")
-    console.print(f"[dim]{t('hint_type_number')}[/dim]")
-    console.print(f"[dim]{t('hint_quit')}[/dim]")
     
-    # Create choice options (just numbers and 'q')
+    # Show hints
+    ui.show_tip(t('search_hint'))
+    console.print()
+    
+    # Create choice options
     choice_options = [str(i) for i in range(1, len(results) + 1)] + ['q']
     
-    # Use Prompt with choices to allow navigation and selection
     while True:
         try:
-            # Get user input with auto-complete and navigation
             choice = Prompt.ask(
-                f"\n{t('select_an_option')}",
+                f"[{Colors.PRIMARY}]{t('select_option')}[/]",
                 choices=choice_options,
                 show_choices=False
             )
             
             if choice == 'q':
-                console.print(f"[green]{t('exiting_search')}[/green]")
+                console.print(f"[{Colors.SUCCESS}]{t('exiting_search')}[/]")
                 break
             
-            # Handle number input
             if choice.isdigit():
                 index = int(choice) - 1
                 if 0 <= index < len(results):
                     selected_software = results[index]
-                    # Add to installation queue
                     _add_to_install_queue(selected_software)
                     break
             
-            # If we get here, input was invalid
-            console.print(f"[red]{t('invalid_selection')}[/red]")
+            console.print(f"[{Colors.ERROR}]{t('invalid_selection')}[/]")
         except (ValueError, IndexError):
-            # Handle invalid input
-            console.print(f"[red]{t('invalid_selection')}[/red]")
+            console.print(f"[{Colors.ERROR}]{t('invalid_selection')}[/]")
+
 
 def _add_to_install_queue(software):
     """Add selected software to installation queue"""
-    console.print(f"\n[bold cyan]{t('adding_to_queue')}[/bold cyan]")
-    console.print(f"Name: {software.get('name', 'N/A')}")
-    console.print(f"Description: {software.get('description', 'N/A')}")
-    console.print(f"Package: {software.get('id', software.get('name', 'N/A'))}")
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.DOWNLOAD} {t('adding_to_queue')}[/]")
+    console.print(f"  {Icons.BULLET} {t('name')}: {software.get('name', 'N/A')}")
+    console.print(f"  {Icons.BULLET} {t('description')}: {software.get('description', 'N/A')}")
+    console.print(f"  {Icons.BULLET} {t('package')}: {software.get('id', software.get('name', 'N/A'))}")
     
-    # Get confirmation from user
-    if Confirm.ask(t('confirm_add')):
-        # Add to config
+    if Confirm.ask(f"\n[{Colors.PRIMARY}]{t('confirm_add')}[/]"):
         config = Config()
         
-        # Determine software ID based on platform
         if sys.platform.startswith('win32'):
-            # Windows: use 'id' for winget
             software_id = software.get('id', software.get('name'))
             config.add_software({
                 'name': software.get('name', software_id),
@@ -397,7 +457,6 @@ def _add_to_install_queue(software):
                 'category': 'Other'
             })
         else:
-            # macOS: use 'name' for brew (since brew uses package names)
             package_name = software.get('name')
             config.add_software({
                 'name': software.get('name', package_name),
@@ -405,44 +464,30 @@ def _add_to_install_queue(software):
                 'category': 'Other'
             })
         
-        # Save config
         config.save()
-        console.print(f"[green]{t('added_successfully')}[/green]")
-        
-        # Show current queue
+        console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('added_successfully')}[/]")
         _show_install_queue()
     else:
-        console.print(f"[yellow]{t('not_added')}[/yellow]")
+        console.print(f"[{Colors.WARNING}]{t('not_added')}[/]")
+
 
 def _show_install_queue():
     """Show current installation queue"""
+    ui = get_ui()
     config = Config()
     software_list = config.get_software_list()
     
     if not software_list:
-        console.print(f"[yellow]{t('queue_empty')}[/yellow]")
+        console.print(f"[{Colors.WARNING}]{t('queue_empty')}[/]")
         return
     
-    console.print(f"\n[bold cyan]{t('installation_queue')}[/bold cyan]")
-    table = Table(show_header=True, header_style="bold green")
-    table.add_column("#", style="dim")
-    table.add_column("Name", style="dim")
-    table.add_column("ID/Package")
-    table.add_column("Category")
-    
-    for i, software in enumerate(software_list, 1):
-        table.add_row(
-            str(i),
-            software.get('name', 'N/A'),
-            software.get('id', software.get('package', 'N/A')),
-            software.get('category', 'N/A')
-        )
-    
+    console.print(f"\n[bold {Colors.PRIMARY}]{Icons.PACKAGE} {t('installation_queue')}[/]")
+    table = ui.create_software_table(software_list, show_status=False)
     console.print(table)
     
-    # Offer to remove software from queue
-    if Confirm.ask(t('remove_from_queue')):
+    if Confirm.ask(f"\n[{Colors.PRIMARY}]{t('remove_from_queue')}[/]"):
         _remove_from_install_queue()
+
 
 def _remove_from_install_queue():
     """Remove software from installation queue"""
@@ -450,86 +495,119 @@ def _remove_from_install_queue():
     software_list = config.get_software_list()
     
     if not software_list:
-        console.print(f"[yellow]{t('queue_empty')}[/yellow]")
+        console.print(f"[{Colors.WARNING}]{t('queue_empty')}[/]")
         return
     
-    # Get user input for software to remove
     while True:
         try:
             index = Prompt.ask(
-                t('enter_remove_number'),
+                f"[{Colors.SECONDARY}]{t('enter_remove_number')}[/]",
                 choices=[str(i) for i in range(1, len(software_list) + 1)] + ['q']
             )
             
             if index == 'q':
-                console.print(f"[green]{t('exiting_remove')}[/green]")
+                console.print(f"[{Colors.SUCCESS}]{t('exiting_remove')}[/]")
                 break
             
-            # Convert to zero-based index
             remove_index = int(index) - 1
             if 0 <= remove_index < len(software_list):
                 removed_software = software_list[remove_index]
                 if config.remove_software(remove_index):
                     config.save()
-                    console.print(f"[green]{t('removed_successfully', name=removed_software.get('name', 'Software'))}[/green]")
-                    # Show updated queue
+                    console.print(f"[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('removed_successfully', name=removed_software.get('name', 'Software'))}[/]")
                     _show_install_queue()
                     break
                 else:
-                    console.print(f"[red]{t('failed_remove')}[/red]")
+                    console.print(f"[bold {Colors.ERROR}]{Icons.ERROR} {t('failed_remove')}[/]")
             else:
-                console.print(f"[red]{t('invalid_software_number')}[/red]")
+                console.print(f"[bold {Colors.ERROR}]{Icons.ERROR} {t('invalid_software_number')}[/]")
         except ValueError:
-            console.print(f"[red]{t('invalid_input')}[/red]")
+            console.print(f"[bold {Colors.ERROR}]{Icons.ERROR} {t('invalid_input')}[/]")
+
 
 @click.group()
 def cli():
-    """Software Install Script (SIS)"""
+    """SwiftInstall - Fast, Simple, Reliable Software Installation"""
     pass
+
 
 @cli.command()
 def version():
     """Show version information"""
     from sis import __version__
-    rprint(f"Software Install Script v{__version__}")
+    
+    logo = get_rich_logo("minimal")
+    console.print(logo)
+    console.print()
+    console.print(Align.center(Text(f"Version {__version__}", style=f"bold {Colors.PRIMARY}")))
+    console.print(Align.center(Text(get_brand_tagline(), style=Colors.TEXT_MUTED)))
+
 
 @cli.command()
 def install():
     """Install software from configuration"""
+    _show_splash_screen()
     _install()
+
 
 @cli.command()
 def config():
     """Configure software list"""
     _config()
 
+
 @cli.command()
 def tui():
     """Launch text-based user interface"""
-    console.print(f"\n[bold cyan]{t('main_menu_title')}[/bold cyan]")
-    console.print("=======================================")
+    ui = get_ui()
+    
+    # Show splash screen on first launch
+    _show_splash_screen()
     
     while True:
-        console.print(f"\n[bold green]{t('main_menu')}[/bold green]")
-        console.print(t('menu_install'))
-        console.print(t('menu_config'))
-        console.print(t('menu_search'))
-        console.print(t('menu_settings'))
-        console.print(t('menu_exit'))
+        ui.clear_screen()
         
-        choice = Prompt.ask(t('enter_choice'), choices=["1", "2", "3", "4", "5"])
+        # Print compact logo
+        logo = get_rich_logo("compact")
+        console.print(logo)
+        console.print()
+        
+        # Create main menu
+        menu_items = [
+            ("1", Icons.INSTALL, t('menu_install')),
+            ("2", Icons.CONFIG, t('menu_config')),
+            ("3", Icons.SEARCH, t('menu_search')),
+            ("4", Icons.SETTINGS, t('menu_settings')),
+            ("5", Icons.EXIT, t('menu_exit')),
+        ]
+        
+        menu_panel = ui.create_main_menu(menu_items)
+        console.print(Align.center(menu_panel))
+        console.print()
+        
+        # Show footer hints
+        ui.show_footer()
+        
+        choice = Prompt.ask(
+            f"[{Colors.PRIMARY}]{t('enter_choice')}[/]",
+            choices=["1", "2", "3", "4", "5"]
+        )
         
         if choice == "1":
             _install()
+            Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
         elif choice == "2":
             _config()
         elif choice == "3":
             _search_software()
+            Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
         elif choice == "4":
-            console.print(f"\n[bold yellow]{t('settings_not_implemented')}[/bold yellow]")
+            console.print(f"\n[bold {Colors.WARNING}]{Icons.SETTINGS} {t('settings_not_implemented')}[/]")
+            Prompt.ask(f"\n[{Colors.TEXT_MUTED}]Press Enter to continue...[/]")
         elif choice == "5":
-            console.print(f"\n[green]{t('exiting')}[/green]")
+            console.print(f"\n[bold {Colors.SUCCESS}]{Icons.SUCCESS} {t('exiting')}[/]")
             break
+
 
 if __name__ == '__main__':
     cli()

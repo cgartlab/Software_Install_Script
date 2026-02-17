@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Internationalization (i18n) module for Software Install Script
+Internationalization (i18n) module for SwiftInstall
 Auto-detects user's locale and timezone to set appropriate language
 """
 
@@ -43,19 +43,55 @@ TIMEZONE_LANG_MAP = {
 # Translations
 TRANSLATIONS: Dict[str, Dict[str, str]] = {
     LANG_EN: {
+        # Brand
+        "app_name": "SwiftInstall",
+        "app_tagline": "Fast • Simple • Reliable",
+        
         # Main Menu
-        "main_menu_title": "Software Install Script - TUI Mode",
+        "main_menu_title": "SwiftInstall - TUI Mode",
         "main_menu": "Main Menu",
-        "menu_install": "1. Install software",
-        "menu_config": "2. Configure software list",
-        "menu_search": "3. Search software",
-        "menu_settings": "4. Settings",
-        "menu_exit": "5. Exit",
+        "menu_install": "Install Software",
+        "menu_config": "Configure Software List",
+        "menu_search": "Search Software",
+        "menu_settings": "Settings",
+        "menu_exit": "Exit",
         "enter_choice": "Enter your choice",
-        "exiting": "Exiting...",
+        "exiting": "Thank you for using SwiftInstall!",
+        
+        # Splash Screen
+        "initializing": "Initializing SwiftInstall",
+        "system_check": "System Check",
+        
+        # Software Management
+        "software_to_install": "Software to Install",
+        "current_software_list": "Current Software List",
+        "view_software_list": "View Software List",
+        "add_software": "Add Software",
+        "add_new_software": "Add New Software",
+        "remove_software": "Remove Software",
+        "remove_software_title": "Remove Software",
+        "save_exit": "Save and Exit",
+        "exit_no_save": "Exit Without Saving",
+        "config_saved": "Configuration saved successfully!",
+        "software_added": "Software added successfully!",
+        "software_removed": "Software removed successfully!",
+        "confirm_exit_no_save": "Are you sure you want to exit without saving?",
+        "enter_software_name": "Enter software name",
+        "enter_winget_id": "Enter Winget ID",
+        "enter_brew_name": "Enter Homebrew package name",
+        "enter_category": "Enter category",
+        "enter_number_remove": "Enter software number to remove",
+        "invalid_number": "Invalid software number!",
+        
+        # Installation
+        "confirm_proceed": "Do you want to proceed with installation?",
+        "installation_cancelled": "Installation cancelled.",
+        "installation_complete": "Installation complete!",
+        "installing": "Installing",
         
         # Search
         "search_software": "Search Software",
+        "searching": "Searching",
         "enter_search_query": "Enter software name or keyword to search",
         "search_query_empty": "Search query cannot be empty",
         "using_homebrew": "Using Homebrew to search...",
@@ -64,20 +100,20 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "winget_not_available": "Winget is not available",
         "error_checking_brew": "Error checking Homebrew",
         "error_checking_winget": "Error checking Winget",
+        "error_searching": "Error searching",
         "unsupported_platform": "Unsupported platform for software search",
         "found_results": "Found {count} results",
         "no_results": "No results found",
-        "how_to_select": "How to select:",
-        "hint_arrow_keys": "1. Use UP/DOWN arrow keys to navigate options",
-        "hint_enter": "2. Press ENTER to select the highlighted option",
-        "hint_type_number": "3. Or directly type the software number and press ENTER",
-        "hint_quit": "4. Type 'q' and press ENTER to quit",
-        "select_an_option": "Select an option",
+        "search_hint": "Type a number to select software, or 'q' to quit",
+        "select_option": "Select an option",
         "invalid_selection": "Invalid selection. Please try again.",
         "exiting_search": "Exiting search...",
         
         # Add to queue
         "adding_to_queue": "Adding to installation queue:",
+        "name": "Name",
+        "description": "Description",
+        "package": "Package",
         "confirm_add": "Do you want to add this software to the installation queue?",
         "added_successfully": "Software added to installation queue successfully!",
         "not_added": "Software not added to installation queue",
@@ -93,23 +129,63 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "invalid_input": "Invalid input. Please enter a number or 'q'.",
         "exiting_remove": "Exiting remove mode...",
         
+        # Status
+        "installed": "Installed",
+        "available": "Available",
+        
         # Settings
-        "settings_not_implemented": "Settings not implemented yet",
+        "settings_not_implemented": "Settings feature coming soon!",
     },
     LANG_ZH: {
+        # Brand
+        "app_name": "SwiftInstall",
+        "app_tagline": "快速 • 简单 • 可靠",
+        
         # Main Menu
-        "main_menu_title": "软件安装脚本 - TUI 模式",
+        "main_menu_title": "SwiftInstall - TUI 模式",
         "main_menu": "主菜单",
-        "menu_install": "1. 安装软件",
-        "menu_config": "2. 配置软件列表",
-        "menu_search": "3. 搜索软件",
-        "menu_settings": "4. 设置",
-        "menu_exit": "5. 退出",
+        "menu_install": "安装软件",
+        "menu_config": "配置软件列表",
+        "menu_search": "搜索软件",
+        "menu_settings": "设置",
+        "menu_exit": "退出",
         "enter_choice": "请输入您的选择",
-        "exiting": "正在退出...",
+        "exiting": "感谢使用 SwiftInstall！",
+        
+        # Splash Screen
+        "initializing": "正在初始化 SwiftInstall",
+        "system_check": "系统检查",
+        
+        # Software Management
+        "software_to_install": "待安装软件",
+        "current_software_list": "当前软件列表",
+        "view_software_list": "查看软件列表",
+        "add_software": "添加软件",
+        "add_new_software": "添加新软件",
+        "remove_software": "移除软件",
+        "remove_software_title": "移除软件",
+        "save_exit": "保存并退出",
+        "exit_no_save": "不保存退出",
+        "config_saved": "配置保存成功！",
+        "software_added": "软件添加成功！",
+        "software_removed": "软件移除成功！",
+        "confirm_exit_no_save": "确定要不保存就退出吗？",
+        "enter_software_name": "请输入软件名称",
+        "enter_winget_id": "请输入 Winget ID",
+        "enter_brew_name": "请输入 Homebrew 包名",
+        "enter_category": "请输入分类",
+        "enter_number_remove": "请输入要移除的软件编号",
+        "invalid_number": "无效的软件编号！",
+        
+        # Installation
+        "confirm_proceed": "是否要继续安装？",
+        "installation_cancelled": "安装已取消。",
+        "installation_complete": "安装完成！",
+        "installing": "正在安装",
         
         # Search
         "search_software": "搜索软件",
+        "searching": "正在搜索",
         "enter_search_query": "请输入要搜索的软件名称或关键词",
         "search_query_empty": "搜索查询不能为空",
         "using_homebrew": "正在使用 Homebrew 搜索...",
@@ -118,20 +194,20 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "winget_not_available": "Winget 不可用",
         "error_checking_brew": "检查 Homebrew 时出错",
         "error_checking_winget": "检查 Winget 时出错",
+        "error_searching": "搜索时出错",
         "unsupported_platform": "不支持的平台，无法搜索软件",
         "found_results": "找到 {count} 个结果",
         "no_results": "未找到结果",
-        "how_to_select": "如何选择：",
-        "hint_arrow_keys": "1. 使用 UP/DOWN 箭头键导航选项",
-        "hint_enter": "2. 按 ENTER 键选择高亮选项",
-        "hint_type_number": "3. 或直接输入软件编号并按 ENTER",
-        "hint_quit": "4. 输入 'q' 并按 ENTER 退出",
-        "select_an_option": "请选择一个选项",
+        "search_hint": "输入数字选择软件，或输入 'q' 退出",
+        "select_option": "请选择一个选项",
         "invalid_selection": "无效的选择，请重试。",
         "exiting_search": "正在退出搜索...",
         
         # Add to queue
         "adding_to_queue": "正在添加到安装队列：",
+        "name": "名称",
+        "description": "描述",
+        "package": "包名",
         "confirm_add": "是否要将此软件添加到安装队列？",
         "added_successfully": "软件已成功添加到安装队列！",
         "not_added": "软件未添加到安装队列",
@@ -147,8 +223,12 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "invalid_input": "无效输入，请输入数字或 'q'。",
         "exiting_remove": "正在退出移除模式...",
         
+        # Status
+        "installed": "已安装",
+        "available": "可安装",
+        
         # Settings
-        "settings_not_implemented": "设置功能尚未实现",
+        "settings_not_implemented": "设置功能即将推出！",
     }
 }
 

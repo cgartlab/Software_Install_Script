@@ -1,0 +1,13 @@
+LICENSE-2.0
+README.md
+setup.py
+sis/__init__.py
+sis/config.py
+sis/installer.py
+sis/main.py
+software_install_script.egg-info/PKG-INFO
+software_install_script.egg-info/SOURCES.txt
+software_install_script.egg-info/dependency_links.txt
+software_install_script.egg-info/entry_points.txt
+software_install_script.egg-info/requires.txt
+software_install_script.egg-info/top_level.txt
