@@ -22,9 +22,13 @@ Usage (GitHub Raw):
 
 import os
 import sys
+import uuid
 import subprocess
 import platform
 import shutil
+import urllib.request
+import tempfile
+import zipfile
 from pathlib import Path
 
 # ANSI color codes for better output
@@ -138,16 +142,22 @@ def get_project_files():
         print_info("Already in the project directory. Using existing files.")
         return os.getcwd()
     
+    target_dir = "Software_Install_Script"
+    
     # Check if git is available
     if shutil.which('git'):
         print_info("Cloning the repository from GitHub...")
         try:
             repo_url = "https://github.com/cgartlab/Software_Install_Script.git"
-            target_dir = "Software_Install_Script"
             
             # Remove existing directory if it exists
             if os.path.exists(target_dir):
-                shutil.rmtree(target_dir)
+                try:
+                    shutil.rmtree(target_dir)
+                except Exception as rm_err:
+                    print_warning(f"Could not remove existing directory: {rm_err}")
+                    # Use a temporary directory name instead
+                    target_dir = f"Software_Install_Script_{uuid.uuid4().hex[:8]}"
             
             subprocess.run(
                 ['git', 'clone', repo_url, target_dir],
@@ -161,10 +171,46 @@ def get_project_files():
             print_warning(f"Failed to clone repository: {e}")
             print_info("Trying to download zip file instead...")
     
-    # Fallback: Download zip file (not implemented in this version)
-    # For now, just exit with error
-    print_error("Could not get project files. Please manually clone the repository.")
-    sys.exit(1)
+    # Fallback: Download zip file
+    print_info("Downloading zip file from GitHub...")
+    try:
+        zip_url = "https://github.com/cgartlab/Software_Install_Script/archive/refs/heads/main.zip"
+        zip_path = os.path.join(tempfile.gettempdir(), "Software_Install_Script.zip")
+        
+        # Download the zip file
+        urllib.request.urlretrieve(zip_url, zip_path)
+        print_success("Zip file downloaded successfully.")
+        
+        # Extract the zip file
+        print_info("Extracting zip file...")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(tempfile.gettempdir())
+        
+        # Find the extracted directory name
+        extracted_dir = os.path.join(tempfile.gettempdir(), "Software_Install_Script-main")
+        
+        # Move to target directory
+        if os.path.exists(target_dir):
+            try:
+                shutil.rmtree(target_dir)
+            except Exception:
+                target_dir = f"Software_Install_Script_{uuid.uuid4().hex[:8]}"
+        
+        shutil.move(extracted_dir, target_dir)
+        
+        # Clean up zip file
+        try:
+            os.remove(zip_path)
+        except Exception:
+            pass
+        
+        print_success(f"Project files extracted to {target_dir}/")
+        return os.path.abspath(target_dir)
+        
+    except Exception as e:
+        print_error(f"Failed to download or extract zip file: {e}")
+        print_error("Could not get project files. Please manually clone or download the repository.")
+        sys.exit(1)
 
 # Install the project and its dependencies
 def install_project(python_cmd, pip_cmd, project_dir):
@@ -221,34 +267,38 @@ def install_project(python_cmd, pip_cmd, project_dir):
 def verify_installation():
     print_header("Verifying Installation")
     
+    # First, try with python -m (most reliable)
+    python_cmd = 'python3' if shutil.which('python3') else 'python'
+    
     try:
-        # Check if sis command is available
         result = subprocess.run(
-            ['sis', 'version'],
+            [python_cmd, '-m', 'sis.main', 'version'],
             capture_output=True,
             text=True
         )
         
         if result.returncode == 0:
             print_success(f"SIS is installed correctly: {result.stdout.strip()}")
+            
+            # Also try the sis command if it exists
+            try:
+                sis_result = subprocess.run(
+                    ['sis', 'version'],
+                    capture_output=True,
+                    text=True
+                )
+                if sis_result.returncode == 0:
+                    print_success("sis command is available in PATH.")
+                else:
+                    print_warning("Note: sis command is not available in PATH yet.")
+                    print_info("Please add your Python Scripts directory to PATH or restart your terminal.")
+            except Exception:
+                print_warning("Note: sis command is not available in PATH yet.")
+                print_info("Please add your Python Scripts directory to PATH or restart your terminal.")
         else:
-            print_warning("sis command not found in PATH or failed to run. Trying with python -m...")
-            
-            # Try with python -m
-            python_cmd = 'python3' if shutil.which('python3') else 'python'
-            result = subprocess.run(
-                [python_cmd, '-m', 'sis.main', 'version'],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode == 0:
-                print_success(f"SIS is installed correctly: {result.stdout.strip()}")
-                print_warning("Note: You may need to add the Python scripts directory to your PATH.")
-            else:
-                print_error("Failed to verify installation.")
-                print_error(f"Error output: {result.stderr}")
-                sys.exit(1)
+            print_error("Failed to verify installation.")
+            print_error(f"Error output: {result.stderr}")
+            sys.exit(1)
         
     except Exception as e:
         print_error(f"Verification failed: {e}")
