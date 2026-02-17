@@ -1,9 +1,9 @@
-title: Software Install Script
-description: Windows 和 macOS 软件批量安装工具
+title: SwiftInstall
+description: 快速、简单、可靠的跨平台软件安装工具
 
 jekyll: false
 markdown: kramdown
 plugins: []
 
 github:
-  repository_nwo: cgartlab/Software_Install_Script
+  repository_nwo: cgartlab/SwiftInstall

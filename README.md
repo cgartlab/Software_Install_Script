@@ -1,7 +1,7 @@
 # SwiftInstall
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/swiftinstall/main/assets/logo.png" alt="SwiftInstall Logo" width="200">
+  <img src="https://raw.githubusercontent.com/cgartlab/SwiftInstall/main/assets/logo.png" alt="SwiftInstall Logo" width="200">
 </p>
 
 <p align="center">
@@ -9,14 +9,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/yourusername/swiftinstall/releases">
-    <img src="https://img.shields.io/github/v/release/yourusername/swiftinstall?style=flat-square&color=blue" alt="Release">
+  <a href="https://github.com/cgartlab/SwiftInstall/releases">
+    <img src="https://img.shields.io/github/v/release/cgartlab/SwiftInstall?style=flat-square&color=blue" alt="Release">
   </a>
-  <a href="https://goreportcard.com/report/github.com/yourusername/swiftinstall">
-    <img src="https://goreportcard.com/badge/github.com/yourusername/swiftinstall?style=flat-square" alt="Go Report Card">
+  <a href="https://goreportcard.com/report/github.com/cgartlab/SwiftInstall">
+    <img src="https://goreportcard.com/badge/github.com/cgartlab/SwiftInstall?style=flat-square" alt="Go Report Card">
   </a>
-  <a href="https://github.com/yourusername/swiftinstall/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/yourusername/swiftinstall?style=flat-square&color=green" alt="License">
+  <a href="https://github.com/cgartlab/SwiftInstall/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/cgartlab/SwiftInstall?style=flat-square&color=green" alt="License">
   </a>
 </p>
 
@@ -59,7 +59,7 @@ wget -qO- https://cgartlab.com/SwiftInstall/install.sh | bash
 
 ### 手动安装
 
-从 [GitHub Releases](https://github.com/yourusername/swiftinstall/releases) 下载对应平台的二进制文件，解压后添加到系统 PATH。
+从 [GitHub Releases](https://github.com/cgartlab/SwiftInstall/releases) 下载对应平台的二进制文件，解压后添加到系统 PATH。
 
 ### 从源码构建
 
@@ -68,8 +68,8 @@ wget -qO- https://cgartlab.com/SwiftInstall/install.sh | bash
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/swiftinstall.git
-cd swiftinstall
+git clone https://github.com/cgartlab/SwiftInstall.git
+cd SwiftInstall
 
 # 构建
 go build -o sis main.go
