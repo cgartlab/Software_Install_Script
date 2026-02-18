@@ -254,8 +254,13 @@ func (m SpinnerModel) View() string {
 func ShowSpinner(message string, action func()) {
 	p := tea.NewProgram(NewSpinner(message))
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Action panicked: %v\n", r)
+			}
+			p.Quit()
+		}()
 		action()
-		p.Quit()
 	}()
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v\n", err)

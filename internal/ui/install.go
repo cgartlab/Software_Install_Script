@@ -106,28 +106,34 @@ func tickCmd() tea.Cmd {
 func (m InstallModel) runInstall() tea.Cmd {
 	return func() tea.Msg {
 		var wg sync.WaitGroup
-		
+
 		if m.parallel {
 			semaphore := make(chan struct{}, 4)
 			for i := range m.packages {
 				wg.Add(1)
-				semaphore <- struct{}{}
 				go func(index int) {
 					defer wg.Done()
+					defer func() {
+						if r := recover(); r != nil {
+							m.mu.Lock()
+							m.results[index] = &installer.InstallResult{
+								Status: installer.StatusFailed,
+								Error:  fmt.Errorf("panic during installation: %v", r),
+							}
+							m.mu.Unlock()
+						}
+					}()
+					semaphore <- struct{}{}
 					defer func() { <-semaphore }()
 					m.installPackage(index)
 				}(i)
 			}
 		} else {
 			for i := range m.packages {
-				wg.Add(1)
-				go func(index int) {
-					defer wg.Done()
-					m.installPackage(index)
-				}(i)
+				m.installPackage(i)
 			}
 		}
-		
+
 		wg.Wait()
 		return installDoneMsg{}
 	}
@@ -152,7 +158,14 @@ func (m *InstallModel) installPackage(index int) {
 		packageID = pkg.Package
 	}
 
-	result, _ := inst.Install(packageID)
+	result, err := inst.Install(packageID)
+	if err != nil && result == nil {
+		result = &installer.InstallResult{
+			Package: installer.PackageInfo{ID: packageID},
+			Status:  installer.StatusFailed,
+			Error:   err,
+		}
+	}
 
 	m.mu.Lock()
 	m.results[index] = result
@@ -167,8 +180,10 @@ func (m *InstallModel) installPackage(index int) {
 	}
 
 	rows := m.table.Rows()
-	rows[index][2] = status
-	m.table.SetRows(rows)
+	if index < len(rows) {
+		rows[index][2] = status
+		m.table.SetRows(rows)
+	}
 	m.mu.Unlock()
 }
 

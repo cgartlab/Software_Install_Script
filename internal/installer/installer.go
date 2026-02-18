@@ -3,11 +3,18 @@ package installer
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
 	"sync"
+)
+
+var (
+	validIDPattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+	idPattern      = regexp.MustCompile(`[A-Za-z0-9]+(?:\.[A-Za-z0-9._-]+)+`)
+	versionPattern = regexp.MustCompile(`^[\d.]+$`)
 )
 
 // InstallStatus 安装状态
@@ -70,8 +77,7 @@ func validatePackageID(packageID string) error {
 	if len(packageID) > 128 {
 		return fmt.Errorf("package ID too long (max 128 characters)")
 	}
-	validID := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
-	if !validID.MatchString(packageID) {
+	if !validIDPattern.MatchString(packageID) {
 		return fmt.Errorf("package ID contains invalid characters")
 	}
 	return nil
@@ -101,6 +107,7 @@ func (w *WindowsInstaller) Install(packageID string) (*InstallResult, error) {
 
 	installed, err := w.IsInstalled(packageID)
 	if err != nil {
+		log.Printf("Warning: failed to check installation status for %s: %v", packageID, err)
 	} else if installed {
 		return &InstallResult{
 			Package: PackageInfo{ID: packageID},
@@ -172,7 +179,7 @@ func (w *WindowsInstaller) IsInstalled(packageID string) (bool, error) {
 	cmd := exec.Command("winget", "list", "--id", packageID)
 	output, err := cmd.Output()
 	if err != nil {
-		return false, nil
+		return false, fmt.Errorf("failed to check installation status: %w", err)
 	}
 	return strings.Contains(string(output), packageID), nil
 }
@@ -198,7 +205,7 @@ func (w *WindowsInstaller) Update() error {
 func parseWingetSearch(output string) []PackageInfo {
 	var packages []PackageInfo
 	lines := strings.Split(output, "\n")
-	
+
 	// 找到标题行和分隔行
 	dataStart := -1
 	for i, line := range lines {
@@ -207,18 +214,18 @@ func parseWingetSearch(output string) []PackageInfo {
 			break
 		}
 	}
-	
+
 	if dataStart == -1 || dataStart >= len(lines) {
 		return packages
 	}
-	
+
 	// 解析数据行
 	for i := dataStart; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
 		if line == "" {
 			continue
 		}
-		
+
 		// 解析行数据 - winget 输出格式: Name Id Version [Source/Tag]
 		// 使用更智能的解析方式
 		pkg := parseWingetLine(line)
@@ -226,7 +233,7 @@ func parseWingetSearch(output string) []PackageInfo {
 			packages = append(packages, pkg)
 		}
 	}
-	
+
 	return packages
 }
 
@@ -234,7 +241,6 @@ func parseWingetSearch(output string) []PackageInfo {
 func parseWingetLine(line string) PackageInfo {
 	pkg := PackageInfo{}
 
-	idPattern := regexp.MustCompile(`[A-Za-z0-9]+(?:\.[A-Za-z0-9._-]+)+`)
 	matches := idPattern.FindAllString(line, -1)
 	if len(matches) == 0 {
 		return pkg
@@ -273,7 +279,6 @@ func parseWingetLine(line string) PackageInfo {
 	for i, f := range fields {
 		if f == "winget" || f == "msstore" {
 			if i > 0 {
-				versionPattern := regexp.MustCompile(`^[\d.]+$`)
 				if versionPattern.MatchString(fields[i-1]) {
 					pkg.Version = fields[i-1]
 				}
@@ -283,7 +288,6 @@ func parseWingetLine(line string) PackageInfo {
 	}
 
 	if pkg.Version == "" && len(fields) > 0 {
-		versionPattern := regexp.MustCompile(`^[\d.]+$`)
 		for _, f := range fields {
 			if versionPattern.MatchString(f) {
 				pkg.Version = f
@@ -299,7 +303,7 @@ func parseWingetLine(line string) PackageInfo {
 func parseWingetList(output string) []PackageInfo {
 	var packages []PackageInfo
 	scanner := bufio.NewScanner(strings.NewReader(output))
-	
+
 	// 跳过标题行
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -488,14 +492,26 @@ func BatchInstall(packages []string, parallel bool, callback func(result *Instal
 
 	if parallel {
 		var wg sync.WaitGroup
-		semaphore := make(chan struct{}, 4) // 限制并发数
+		semaphore := make(chan struct{}, 4)
 
 		for _, pkg := range packages {
 			wg.Add(1)
-			semaphore <- struct{}{}
 
 			go func(packageID string) {
 				defer wg.Done()
+				defer func() {
+					if r := recover(); r != nil {
+						mu.Lock()
+						results = append(results, &InstallResult{
+							Package: PackageInfo{ID: packageID},
+							Status:  StatusFailed,
+							Error:   fmt.Errorf("panic during installation: %v", r),
+						})
+						mu.Unlock()
+					}
+				}()
+
+				semaphore <- struct{}{}
 				defer func() { <-semaphore }()
 
 				result, err := installer.Install(packageID)

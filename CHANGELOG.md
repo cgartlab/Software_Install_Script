@@ -12,6 +12,13 @@ All notable changes to SwiftInstall will be documented in this file.
 - 修复 Makefile 中 ldflags 包路径错误
 - 添加 `validatePackageID()` 函数验证包ID格式，防止潜在命令注入
 - 改进 `parseWingetLine()` 函数，使用正则表达式更好地解析含空格的软件名
+- 修复 `IsInstalled()` 方法错误返回值，正确返回错误信息
+- 修复 `Install()` 方法中 `IsInstalled` 错误被忽略的问题
+- 修复 `BatchInstall()` 并发安装时缺少 panic 恢复机制
+- 修复 `install.go` 中非并行模式实际仍是并发执行的问题
+- 修复 `ShowSpinner()` goroutine 缺少 panic 恢复机制
+- 修复 `installPackage()` 中 `Install` 错误被忽略的问题
+- 添加数组越界检查防止 table 更新崩溃
 
 ### Added
 - 添加 `internal/installer/installer_test.go` 测试文件
@@ -27,10 +34,13 @@ All notable changes to SwiftInstall will be documented in this file.
   - TestTranslation: 翻译功能测试
   - TestLanguageSwitch: 语言切换测试
   - TestCompleteness: 翻译完整性测试
+- 添加包级正则表达式缓存，优化性能
 
 ### Changed
 - 优化并发安装时的线程安全性
 - 改进 winget 输出解析的健壮性
+- 统一错误处理模式，添加日志记录
+- 改进并发安装的 semaphore 获取方式，避免主 goroutine 阻塞
 
 ## [0.1.2] - 2024-01-01
 
