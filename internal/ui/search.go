@@ -125,7 +125,11 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							ID:       pkg.ID,
 							Category: "Other",
 						})
-						config.Save()
+						if err := config.Save(); err != nil {
+							return m, func() tea.Msg {
+								return fmt.Errorf("failed to save config: %w", err)
+							}
+						}
 						m.selected = append(m.selected, pkg)
 					}
 				}

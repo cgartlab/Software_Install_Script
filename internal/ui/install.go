@@ -88,7 +88,7 @@ func NewInstallModel(packages []config.Software, parallel bool) InstallModel {
 }
 
 // Init 初始化
-func (m InstallModel) Init() tea.Cmd {
+func (m *InstallModel) Init() tea.Cmd {
 	return tea.Batch(
 		tickCmd(),
 		m.runInstall(),
@@ -103,7 +103,7 @@ func tickCmd() tea.Cmd {
 }
 
 // runInstall 运行安装
-func (m InstallModel) runInstall() tea.Cmd {
+func (m *InstallModel) runInstall() tea.Cmd {
 	return func() tea.Msg {
 		var wg sync.WaitGroup
 
@@ -191,7 +191,7 @@ func (m *InstallModel) installPackage(index int) {
 type installDoneMsg struct{}
 
 // Update 更新
-func (m InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -243,7 +243,7 @@ func (m InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View 视图
-func (m InstallModel) View() string {
+func (m *InstallModel) View() string {
 	if m.quitting {
 		return "\n  " + i18n.T("common_cancel") + "\n"
 	}
@@ -309,7 +309,8 @@ func RunInstall(packages []config.Software, parallel bool) {
 		return
 	}
 
-	p := tea.NewProgram(NewInstallModel(packages, parallel), tea.WithAltScreen())
+	model := NewInstallModel(packages, parallel)
+	p := tea.NewProgram(&model, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
