@@ -209,10 +209,13 @@ func init() {
 	rootCmd.AddCommand(helpDocCmd)
 	rootCmd.AddCommand(uninstallAllCmd)
 	rootCmd.AddCommand(editListCmd)
+	rootCmd.AddCommand(setupCmd)
 
 	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
 	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
 	batchCmd.Flags().BoolP("parallel", "p", true, i18n.T("flag_parallel"))
+	setupCmd.Flags().Bool("auto-install-deps", true, "Automatically install/update package-manager dependencies")
+	setupCmd.Flags().Bool("dry-run", false, "Preview setup actions without executing commands")
 }
 
 func initConfig() {
@@ -443,6 +446,47 @@ var helpDocCmd = &cobra.Command{
 	Long:  i18n.T("cmd_help_long"),
 	Run: func(cmd *cobra.Command, args []string) {
 		printComprehensiveHelp()
+	},
+}
+
+var setupCmd = &cobra.Command{
+	Use:   "setup",
+	Short: "一条命令自动完成环境检测、依赖准备与验证",
+	Long:  "自动检测平台环境，准备包管理器依赖，并在结束后执行验证检查。",
+	Run: func(cmd *cobra.Command, args []string) {
+		autoInstallDeps, _ := cmd.Flags().GetBool("auto-install-deps")
+		dryRun, _ := cmd.Flags().GetBool("dry-run")
+
+		result, err := installer.RunOneCommandSetup(installer.SetupOptions{
+			AutoInstallDeps: autoInstallDeps,
+			DryRun:          dryRun,
+		}, nil)
+
+		fmt.Println(ui.InfoStyle.Render("Setup summary:"))
+		fmt.Printf("  Platform: %s\n", result.Platform)
+		fmt.Printf("  Package manager: %s\n", result.PackageManager)
+		fmt.Printf("  Environment ready: %v\n", result.EnvironmentReady)
+
+		if len(result.DependencyActions) > 0 {
+			fmt.Println(ui.InfoStyle.Render("Dependency actions:"))
+			for _, a := range result.DependencyActions {
+				fmt.Printf("  - %s\n", a)
+			}
+		}
+
+		if len(result.Verification) > 0 {
+			fmt.Println(ui.InfoStyle.Render("Verification:"))
+			for _, v := range result.Verification {
+				fmt.Printf("  - %s\n", v)
+			}
+		}
+
+		if err != nil {
+			fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("Setup failed: %v", err)))
+			os.Exit(1)
+		}
+
+		fmt.Println(ui.SuccessStyle.Render("Setup completed successfully."))
 	},
 }
 
