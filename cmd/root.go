@@ -5,20 +5,22 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"swiftinstall/internal/appinfo"
 	"swiftinstall/internal/config"
 	"swiftinstall/internal/i18n"
 	"swiftinstall/internal/ui"
 )
 
 var (
-	version   = "dev"
-	commit    = "unknown"
-	date      = "unknown"
-	cfgFile   string
-	language  string
+	version  = "dev"
+	commit   = "unknown"
+	date     = "unknown"
+	cfgFile  string
+	language string
 )
 
 var rootCmd = &cobra.Command{
@@ -26,8 +28,10 @@ var rootCmd = &cobra.Command{
 	Short: i18n.T("app_short_desc"),
 	Long:  ui.GetLogo() + "\n\n" + i18n.T("app_long_desc"),
 	Run: func(cmd *cobra.Command, args []string) {
-		// 如果没有子命令，显示帮助信息并启动交互式菜单
 		fmt.Println(ui.GetCompactLogo())
+		fmt.Println()
+		fmt.Println(ui.SubtitleStyle.Render(fmt.Sprintf("Version: %s | Author: %s", version, appinfo.Author)))
+		fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
 		fmt.Println()
 		fmt.Println(ui.InfoStyle.Render("Usage: sis <command> [flags]"))
 		fmt.Println()
@@ -38,15 +42,15 @@ var rootCmd = &cobra.Command{
 		fmt.Println(ui.HelpStyle.Render("  list        List configured packages"))
 		fmt.Println(ui.HelpStyle.Render("  config      Manage configuration"))
 		fmt.Println(ui.HelpStyle.Render("  status      Show system status"))
+		fmt.Println(ui.HelpStyle.Render("  about       Show author and project information"))
+		fmt.Println(ui.HelpStyle.Render("  help        Show complete help document"))
 		fmt.Println()
-		fmt.Println(ui.HelpStyle.Render("Run 'sis --help' for more information"))
+		fmt.Println(ui.HelpStyle.Render("Run 'sis help' or 'sis <command> help' for more information"))
 		fmt.Println()
-		
-		// 询问是否启动交互式菜单
+
 		fmt.Print(ui.InfoStyle.Render("Launch interactive menu? [Y/n]: "))
 		var response string
 		if _, err := fmt.Scanln(&response); err != nil {
-			// 输入错误时默认启动交互式菜单
 			log.Printf("Warning: failed to read user input: %v", err)
 			fmt.Println()
 			fmt.Println(ui.InfoStyle.Render("Input reading failed. Launching interactive menu automatically..."))
@@ -60,6 +64,61 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+func hasHelpArg(args []string) bool {
+	return len(args) == 1 && strings.EqualFold(args[0], "help")
+}
+
+func showCommandHelpIfRequested(cmd *cobra.Command, args []string) bool {
+	if !hasHelpArg(args) {
+		return false
+	}
+	if err := cmd.Help(); err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+	return true
+}
+
+func printComprehensiveHelp() {
+	fmt.Println(ui.GetCompactLogo())
+	fmt.Println()
+	fmt.Println(ui.TitleStyle.Render("SwiftInstall Help"))
+	fmt.Println(ui.HelpStyle.Render("Install and manage software packages across platforms."))
+	fmt.Println()
+	fmt.Println(ui.InfoStyle.Render("Commands:"))
+	fmt.Println("  sis install [package...]          Install from config or explicit package IDs")
+	fmt.Println("  sis uninstall [package...]        Uninstall packages from config or explicit IDs")
+	fmt.Println("  sis search <query>                Search packages")
+	fmt.Println("  sis list                          Show configured software")
+	fmt.Println("  sis config                        Open configuration manager")
+	fmt.Println("  sis wizard                        Start setup wizard")
+	fmt.Println("  sis batch [file]                  Batch install from file/config")
+	fmt.Println("  sis export --format json --output out.json")
+	fmt.Println("  sis update                        Check updates")
+	fmt.Println("  sis clean                         Clean cache")
+	fmt.Println("  sis status                        Show system status")
+	fmt.Println("  sis about                         Show author/contact/GitHub")
+	fmt.Println("  sis version                       Show version/build information")
+	fmt.Println()
+	fmt.Println(ui.InfoStyle.Render("Command-specific help:"))
+	fmt.Println("  sis <command> --help")
+	fmt.Println("  sis <command> help")
+	fmt.Println()
+	fmt.Println(ui.InfoStyle.Render("TUI shortcuts (main menu):"))
+	fmt.Println("  ↑/↓ : navigate")
+	fmt.Println("  Enter: open selected menu")
+	fmt.Println("  i: install   s: search   c: config   a: about   q: quit")
+	fmt.Println()
+	fmt.Println(ui.InfoStyle.Render("Examples:"))
+	fmt.Println("  sis install")
+	fmt.Println("  sis install Git.Git Microsoft.VisualStudioCode")
+	fmt.Println("  sis search vscode")
+	fmt.Println("  sis config")
+	fmt.Println("  sis install help")
+	fmt.Println("  sis help")
+	fmt.Println()
+	fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
+}
+
 func Execute() error {
 	return rootCmd.Execute()
 }
@@ -70,7 +129,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", i18n.T("flag_config"))
 	rootCmd.PersistentFlags().StringVarP(&language, "lang", "l", "", i18n.T("flag_language"))
 
-	// 添加子命令
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(installCmd)
 	rootCmd.AddCommand(uninstallCmd)
@@ -83,21 +141,20 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(cleanCmd)
 	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(aboutCmd)
+	rootCmd.AddCommand(helpDocCmd)
 
-	// 设置子命令标志
 	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
 	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
 	batchCmd.Flags().BoolP("parallel", "p", true, i18n.T("flag_parallel"))
 }
 
 func initConfig() {
-	// 初始化配置
 	if cfgFile != "" {
 		config.SetConfigFile(cfgFile)
 	}
 	config.Init()
 
-	// 设置语言
 	if language != "" {
 		i18n.SetLanguage(language)
 	} else if lang := config.GetString("language"); lang != "" {
@@ -109,6 +166,9 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: i18n.T("cmd_version_short"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		style := lipgloss.NewStyle().
 			Foreground(lipgloss.Color(ui.ColorPrimary)).
 			Bold(true)
@@ -128,11 +188,12 @@ var installCmd = &cobra.Command{
 	Short: i18n.T("cmd_install_short"),
 	Long:  i18n.T("cmd_install_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		if len(args) == 0 {
-			// 从配置文件安装
 			runInstallFromConfig()
 		} else {
-			// 安装指定包
 			runInstallPackages(args)
 		}
 	},
@@ -143,6 +204,9 @@ var uninstallCmd = &cobra.Command{
 	Short: i18n.T("cmd_uninstall_short"),
 	Long:  i18n.T("cmd_uninstall_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		if len(args) == 0 {
 			runUninstallFromConfig()
 		} else {
@@ -155,8 +219,16 @@ var searchCmd = &cobra.Command{
 	Use:   "search <query>",
 	Short: i18n.T("cmd_search_short"),
 	Long:  i18n.T("cmd_search_long"),
-	Args:  cobra.ExactArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		if hasHelpArg(args) {
+			return nil
+		}
+		return cobra.ExactArgs(1)(cmd, args)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runSearch(args[0])
 	},
 }
@@ -166,6 +238,9 @@ var listCmd = &cobra.Command{
 	Short: i18n.T("cmd_list_short"),
 	Long:  i18n.T("cmd_list_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runList()
 	},
 }
@@ -175,6 +250,9 @@ var configCmd = &cobra.Command{
 	Short: i18n.T("cmd_config_short"),
 	Long:  i18n.T("cmd_config_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runConfig()
 	},
 }
@@ -184,6 +262,9 @@ var wizardCmd = &cobra.Command{
 	Short: i18n.T("cmd_wizard_short"),
 	Long:  i18n.T("cmd_wizard_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runWizard()
 	},
 }
@@ -193,6 +274,9 @@ var batchCmd = &cobra.Command{
 	Short: i18n.T("cmd_batch_short"),
 	Long:  i18n.T("cmd_batch_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		if len(args) > 0 {
 			runBatchFromFile(args[0])
 		} else {
@@ -206,6 +290,9 @@ var exportCmd = &cobra.Command{
 	Short: i18n.T("cmd_export_short"),
 	Long:  i18n.T("cmd_export_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		format, _ := cmd.Flags().GetString("format")
 		output, _ := cmd.Flags().GetString("output")
 		runExport(format, output)
@@ -217,6 +304,9 @@ var updateCmd = &cobra.Command{
 	Short: i18n.T("cmd_update_short"),
 	Long:  i18n.T("cmd_update_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runUpdate()
 	},
 }
@@ -226,6 +316,9 @@ var cleanCmd = &cobra.Command{
 	Short: i18n.T("cmd_clean_short"),
 	Long:  i18n.T("cmd_clean_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runClean()
 	},
 }
@@ -235,12 +328,35 @@ var statusCmd = &cobra.Command{
 	Short: i18n.T("cmd_status_short"),
 	Long:  i18n.T("cmd_status_long"),
 	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
 		runStatus()
 	},
 }
 
+var aboutCmd = &cobra.Command{
+	Use:   "about",
+	Short: i18n.T("cmd_about_short"),
+	Long:  i18n.T("cmd_about_long"),
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		ui.RunAbout()
+	},
+}
+
+var helpDocCmd = &cobra.Command{
+	Use:   "help",
+	Short: i18n.T("cmd_help_short"),
+	Long:  i18n.T("cmd_help_long"),
+	Run: func(cmd *cobra.Command, args []string) {
+		printComprehensiveHelp()
+	},
+}
+
 func runInteractiveTUI() {
-	// 启动交互式 TUI
 	ui.RunMainMenu()
 }
 

@@ -25,6 +25,8 @@ type SearchModel struct {
 	width       int
 	height      int
 	selected    []installer.PackageInfo
+	message     string
+	messageType string
 }
 
 // NewSearchModel 创建搜索模型
@@ -54,16 +56,15 @@ func NewSearchModel(initialQuery string) SearchModel {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color(ColorText)).
-		Background(lipgloss.Color(ColorSecondary)).
-		Bold(false)
+		Foreground(lipgloss.Color(ColorPrimaryBright)).
+		Bold(true)
 	t.SetStyles(s)
 
 	return SearchModel{
-		input:  ti,
-		query:  initialQuery,
-		table:  t,
-		results: []installer.PackageInfo{},
+		input:    ti,
+		query:    initialQuery,
+		table:    t,
+		results:  []installer.PackageInfo{},
 		selected: []installer.PackageInfo{},
 	}
 }
@@ -126,11 +127,13 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Category: "Other",
 						})
 						if err := config.Save(); err != nil {
-							return m, func() tea.Msg {
-								return fmt.Errorf("failed to save config: %w", err)
-							}
+							m.message = fmt.Sprintf("%s: %v", i18n.T("config_save_error"), err)
+							m.messageType = "error"
+							return m, nil
 						}
 						m.selected = append(m.selected, pkg)
+						m.message = i18n.T("search_added_hint")
+						m.messageType = "success"
 					}
 				}
 			} else {
@@ -138,6 +141,7 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.query = m.input.Value()
 				if m.query != "" {
 					m.searching = true
+					m.message = ""
 					return m, m.search(m.query)
 				}
 			}
@@ -159,7 +163,11 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searching = false
 		if msg.err != nil {
 			m.results = []installer.PackageInfo{}
+			m.message = fmt.Sprintf("%s: %v", i18n.T("common_error"), msg.err)
+			m.messageType = "error"
 		} else {
+			m.message = ""
+			m.messageType = ""
 			m.results = msg.results
 			// 更新表格
 			var rows []table.Row
@@ -210,16 +218,26 @@ func (m SearchModel) View() string {
 		b.WriteString("\n")
 		b.WriteString(m.table.View())
 		b.WriteString("\n")
-		b.WriteString(HelpStyle.Render(i18n.T("search_add") + " Enter | " + i18n.T("common_back") + " Esc | " + i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render(i18n.T("search_add") + " Enter | " + i18n.T("search_refine") + " / | " + i18n.T("common_back") + " Esc | " + i18n.T("common_cancel") + " q"))
 	} else if m.query != "" && !m.searching {
 		b.WriteString(WarningStyle.Render(i18n.T("search_no_results")))
+		b.WriteString("\n")
+	}
+
+	if m.message != "" {
+		b.WriteString("\n")
+		if m.messageType == "error" {
+			b.WriteString(ErrorStyle.Render(m.message))
+		} else {
+			b.WriteString(SuccessStyle.Render(m.message))
+		}
 		b.WriteString("\n")
 	}
 
 	// 已选择
 	if len(m.selected) > 0 {
 		b.WriteString("\n")
-		b.WriteString(SuccessStyle.Render(fmt.Sprintf("✓ Added %d packages to config", len(m.selected))))
+		b.WriteString(SuccessStyle.Render(fmt.Sprintf("✓ %s: %d", i18n.T("search_added_count"), len(m.selected))))
 	}
 
 	return b.String()
@@ -265,7 +283,7 @@ func ShowPackageList(packages []config.Software) {
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
-		table.WithHeight(len(packages) + 2),
+		table.WithHeight(len(packages)+2),
 	)
 
 	s := table.DefaultStyles()
