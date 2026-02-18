@@ -55,6 +55,20 @@ curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash
 wget -qO- https://cgartlab.com/SwiftInstall/install.sh | bash
 ```
 
+
+### 环境一键准备（新）
+
+安装 `sis` 后，执行以下单条命令即可自动完成环境检测、依赖准备与验证：
+
+```bash
+sis setup --auto-install-deps
+```
+
+可选：
+
+- `--dry-run`：仅预览操作，不执行系统命令。
+- `--auto-install-deps=false`：只做检测与验证，不自动安装依赖。
+
 ### 手动安装
 
 从 [GitHub Releases](https://github.com/cgartlab/SwiftInstall/releases) 下载对应平台的二进制文件，解压后添加到系统 PATH。
