@@ -90,6 +90,8 @@ func NewInstaller() Installer {
 		return &WindowsInstaller{}
 	case "darwin":
 		return &MacOSInstaller{}
+	case "linux":
+		return NewLinuxInstaller()
 	default:
 		return nil
 	}
@@ -573,6 +575,12 @@ func CheckPackageManager() (string, bool) {
 			return "homebrew", true
 		}
 		return "homebrew", false
+	case "linux":
+		pm, ok := detectLinuxPackageManager()
+		if ok {
+			return pm, true
+		}
+		return "", false
 	default:
 		return "", false
 	}

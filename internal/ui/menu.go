@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"swiftinstall/internal/appinfo"
 	"swiftinstall/internal/config"
 	"swiftinstall/internal/i18n"
 )
@@ -83,8 +84,14 @@ func NewMainMenu() MainMenuModel {
 			Action:      func() { RunUpdateCheck() },
 		},
 		MenuItem{
+			Title:       i18n.T("menu_about"),
+			Description: i18n.T("menu_about_desc"),
+			Icon:        "ℹ️",
+			Action:      func() { RunAbout() },
+		},
+		MenuItem{
 			Title:       i18n.T("menu_exit"),
-			Description: "Exit the application",
+			Description: i18n.T("menu_exit_desc"),
 			Icon:        "🚪",
 			Action:      func() { os.Exit(0) },
 		},
@@ -120,10 +127,24 @@ func (m MainMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
+		case "up":
+			m.list.CursorUp()
+			return m, nil
+		case "down":
+			m.list.CursorDown()
+			return m, nil
 		case "enter":
 			if item, ok := m.list.SelectedItem().(MenuItem); ok {
 				item.Action()
 			}
+		case "i":
+			RunInstall(config.Get().GetSoftwareList(), false)
+		case "s":
+			RunSearch("")
+		case "c":
+			RunConfigManager()
+		case "a":
+			RunAbout()
 		}
 	}
 
@@ -140,22 +161,29 @@ func (m MainMenuModel) View() string {
 
 	logo := GetCompactLogo()
 	menu := m.list.View()
-	
+
 	// 构建帮助信息
-	helpText := fmt.Sprintf("%s: ↑/k %s • ↓/j %s • Enter %s • q %s",
+	helpText := fmt.Sprintf("%s: ↑/%s • ↓/%s • Enter %s • i:%s • s:%s • c:%s • a:%s • q:%s",
 		i18n.T("common_navigation"),
 		i18n.T("common_up"),
 		i18n.T("common_down"),
 		i18n.T("common_select"),
+		i18n.T("menu_install"),
+		i18n.T("menu_search"),
+		i18n.T("menu_config"),
+		i18n.T("menu_about"),
 		i18n.T("common_quit"),
 	)
 	help := HelpStyle.Render(helpText)
-	
+
 	// 添加命令提示
 	tip := SubtitleStyle.Render(fmt.Sprintf("%s: sis install, sis search, sis list...", i18n.T("common_tip")))
 
+	meta := SubtitleStyle.Render(fmt.Sprintf("%s: %s", i18n.T("about_author"), appinfo.Author))
+	copy := HelpStyle.Render(appinfo.Copyright)
+
 	return lipgloss.JoinVertical(
-		lipgloss.Center,
+		lipgloss.Left,
 		logo,
 		"",
 		TitleStyle.Render(i18n.T("menu_title")),
@@ -165,13 +193,16 @@ func (m MainMenuModel) View() string {
 		help,
 		"",
 		tip,
+		"",
+		meta,
+		copy,
 	)
 }
 
 // menuItemDelegate 菜单项委托
 type menuItemDelegate struct{}
 
-func (d menuItemDelegate) Height() int                             { return 2 }
+func (d menuItemDelegate) Height() int                             { return 3 }
 func (d menuItemDelegate) Spacing() int                            { return 1 }
 func (d menuItemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 func (d menuItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
@@ -180,16 +211,18 @@ func (d menuItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 		return
 	}
 
-	str := fmt.Sprintf("%s %s\n    %s", item.Icon, item.Title, item.Description)
+	title := fmt.Sprintf("%s %s", item.Icon, item.Title)
+	desc := item.Description
 
-	fn := MenuStyle.Render
 	if index == m.Index() {
-		fn = func(s ...string) string {
-			return MenuSelectedStyle.Render("> " + s[0])
-		}
+		title = MenuSelectedStyle.Render("> " + title)
+		desc = MenuSelectedStyle.UnsetBold().Foreground(lipgloss.Color(ColorMuted)).Render("  " + desc)
+	} else {
+		title = MenuStyle.Render("  " + title)
+		desc = MenuDescriptionStyle.Render(desc)
 	}
 
-	fmt.Fprint(w, fn(str))
+	fmt.Fprint(w, lipgloss.JoinVertical(lipgloss.Left, title, desc))
 }
 
 // RunMainMenu 运行主菜单
