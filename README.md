@@ -1,10 +1,6 @@
 # SwiftInstall
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/cgartlab/SwiftInstall/main/assets/logo.png" alt="SwiftInstall Logo" width="200">
-</p>
-
-<p align="center">
   <b>⚡ 快速、简单、可靠的跨平台软件安装工具</b>
 </p>
 
@@ -16,7 +12,7 @@
     <img src="https://goreportcard.com/badge/github.com/cgartlab/SwiftInstall?style=flat-square" alt="Go Report Card">
   </a>
   <a href="https://github.com/cgartlab/SwiftInstall/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/cgartlab/SwiftInstall?style=flat-square&color=green" alt="License">
+    <img src="https://img.shields.io/badge/License-CC%20BY--NC%204.0-green?style=flat-square" alt="License">
   </a>
 </p>
 
@@ -222,7 +218,7 @@ Visual Studio Code   Microsoft.VisualStudioCode   ✓ 成功
 
 ## 📝 许可证
 
-本项目采用 [MIT](LICENSE) 许可证。
+本项目采用 [CC BY-NC 4.0](LICENSE) 许可证。
 
 ## 🙏 致谢
 
