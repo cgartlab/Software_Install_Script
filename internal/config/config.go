@@ -29,10 +29,10 @@ type Software struct {
 
 // Config 配置结构
 type Config struct {
-	viper       *viper.Viper
-	configFile  string
-	software    []Software
-	mu          sync.RWMutex
+	viper      *viper.Viper
+	configFile string
+	software   []Software
+	mu         sync.RWMutex
 }
 
 // Init 初始化配置
@@ -51,6 +51,18 @@ func Get() *Config {
 		Init()
 	}
 	return instance
+}
+
+// Reload 重新加载配置
+func Reload() {
+	if instance != nil {
+		instance.load()
+	}
+}
+
+// GetConfigPath 获取配置文件路径
+func (c *Config) GetConfigPath() string {
+	return c.configFile
 }
 
 // SetConfigFile 设置配置文件路径
@@ -73,6 +85,23 @@ func Set(key string, value interface{}) {
 	if instance != nil {
 		instance.viper.Set(key, value)
 	}
+}
+
+// GetBool 获取布尔配置
+func GetBool(key string) bool {
+	if instance == nil {
+		return false
+	}
+	return instance.viper.GetBool(key)
+}
+
+// SetAndSave 设置配置并保存
+func SetAndSave(key string, value interface{}) error {
+	if instance == nil {
+		return fmt.Errorf("config not initialized")
+	}
+	instance.viper.Set(key, value)
+	return instance.save()
 }
 
 // Save 保存配置
@@ -117,6 +146,8 @@ func (c *Config) setDefaults() {
 	c.viper.SetDefault("max_workers", 4)
 	c.viper.SetDefault("auto_update_check", true)
 	c.viper.SetDefault("confirm_before_install", true)
+	c.viper.SetDefault("auto_update_prompted", false)
+	c.viper.SetDefault("env_checked", false)
 }
 
 // getDefaultConfigPath 获取默认配置文件路径
@@ -148,6 +179,12 @@ func (c *Config) getDefaultSoftware() []Software {
 			{Name: "Visual Studio Code", Package: "visual-studio-code", Category: "Development"},
 			{Name: "Google Chrome", Package: "google-chrome", Category: "Browsers"},
 		}
+	} else if runtime.GOOS == "linux" {
+		return []Software{
+			{Name: "Git", Package: "git", Category: "Development"},
+			{Name: "curl", Package: "curl", Category: "Utilities"},
+			{Name: "wget", Package: "wget", Category: "Utilities"},
+		}
 	}
 	return []Software{}
 }
@@ -167,6 +204,8 @@ func (c *Config) loadFromFile() {
 		MaxWorkers           int        `yaml:"max_workers"`
 		AutoUpdateCheck      bool       `yaml:"auto_update_check"`
 		ConfirmBeforeInstall bool       `yaml:"confirm_before_install"`
+		AutoUpdatePrompted   bool       `yaml:"auto_update_prompted"`
+		EnvChecked           bool       `yaml:"env_checked"`
 		Software             []Software `yaml:"software"`
 	}
 
@@ -185,6 +224,8 @@ func (c *Config) loadFromFile() {
 	c.viper.Set("max_workers", config.MaxWorkers)
 	c.viper.Set("auto_update_check", config.AutoUpdateCheck)
 	c.viper.Set("confirm_before_install", config.ConfirmBeforeInstall)
+	c.viper.Set("auto_update_prompted", config.AutoUpdatePrompted)
+	c.viper.Set("env_checked", config.EnvChecked)
 
 	c.software = config.Software
 }
@@ -201,6 +242,8 @@ func (c *Config) save() error {
 		MaxWorkers           int        `yaml:"max_workers"`
 		AutoUpdateCheck      bool       `yaml:"auto_update_check"`
 		ConfirmBeforeInstall bool       `yaml:"confirm_before_install"`
+		AutoUpdatePrompted   bool       `yaml:"auto_update_prompted"`
+		EnvChecked           bool       `yaml:"env_checked"`
 		Software             []Software `yaml:"software"`
 	}{
 		Language:             c.viper.GetString("language"),
@@ -209,6 +252,8 @@ func (c *Config) save() error {
 		MaxWorkers:           c.viper.GetInt("max_workers"),
 		AutoUpdateCheck:      c.viper.GetBool("auto_update_check"),
 		ConfirmBeforeInstall: c.viper.GetBool("confirm_before_install"),
+		AutoUpdatePrompted:   c.viper.GetBool("auto_update_prompted"),
+		EnvChecked:           c.viper.GetBool("env_checked"),
 		Software:             c.software,
 	}
 

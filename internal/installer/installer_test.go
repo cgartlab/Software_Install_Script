@@ -72,6 +72,11 @@ func TestCheckPackageManager(t *testing.T) {
 			t.Errorf("CheckPackageManager() name = %q, want %q", name, "homebrew")
 		}
 		t.Logf("macOS: homebrew available = %v", available)
+	case "linux":
+		if name == "" {
+			t.Errorf("CheckPackageManager() name is empty on linux")
+		}
+		t.Logf("Linux: %s available = %v", name, available)
 	default:
 		if name != "" {
 			t.Errorf("CheckPackageManager() name = %q on unsupported OS, want empty", name)
@@ -116,6 +121,10 @@ func TestNewInstaller(t *testing.T) {
 	case "darwin":
 		if inst == nil {
 			t.Error("NewInstaller() returned nil on macOS")
+		}
+	case "linux":
+		if inst == nil {
+			t.Error("NewInstaller() returned nil on Linux")
 		}
 	default:
 		if inst != nil {
