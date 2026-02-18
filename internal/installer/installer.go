@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -58,6 +59,24 @@ type WindowsInstaller struct {
 	BaseInstaller
 }
 
+// validatePackageID 验证包ID格式是否合法
+func validatePackageID(packageID string) error {
+	if packageID == "" {
+		return fmt.Errorf("package ID cannot be empty")
+	}
+	if strings.Contains(packageID, " ") {
+		return fmt.Errorf("package ID cannot contain spaces")
+	}
+	if len(packageID) > 128 {
+		return fmt.Errorf("package ID too long (max 128 characters)")
+	}
+	validID := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+	if !validID.MatchString(packageID) {
+		return fmt.Errorf("package ID contains invalid characters")
+	}
+	return nil
+}
+
 // NewInstaller 创建安装器
 func NewInstaller() Installer {
 	switch runtime.GOOS {
@@ -72,9 +91,17 @@ func NewInstaller() Installer {
 
 // Install 安装软件
 func (w *WindowsInstaller) Install(packageID string) (*InstallResult, error) {
-	// 检查是否已安装
+	if err := validatePackageID(packageID); err != nil {
+		return &InstallResult{
+			Package: PackageInfo{ID: packageID},
+			Status:  StatusFailed,
+			Error:   err,
+		}, err
+	}
+
 	installed, err := w.IsInstalled(packageID)
-	if err == nil && installed {
+	if err != nil {
+	} else if installed {
 		return &InstallResult{
 			Package: PackageInfo{ID: packageID},
 			Status:  StatusSkipped,
@@ -205,38 +232,66 @@ func parseWingetSearch(output string) []PackageInfo {
 
 // parseWingetLine 解析单行 winget 输出
 func parseWingetLine(line string) PackageInfo {
-	// winget 输出格式示例:
-	// Git Git.Git 2.47.0 winget
-	// 或
-	// GitHub Desktop GitHub.GitHubDesktop 3.5.4 Tag: git winget
-	
-	fields := strings.Fields(line)
-	if len(fields) < 2 {
-		return PackageInfo{}
-	}
-	
-	// 最后一列通常是 source (winget 或 msstore)
-	// 倒数第二列通常是版本号
-	// 第二列是 ID
-	// 第一列是名称
-	
 	pkg := PackageInfo{}
-	
-	// 简单启发式解析
-	if len(fields) >= 4 {
-		// 假设最后一个是 source，倒数第二是版本
-		pkg.Name = fields[0]
-		pkg.ID = fields[1]
-		pkg.Version = fields[len(fields)-2]
-	} else if len(fields) == 3 {
-		pkg.Name = fields[0]
-		pkg.ID = fields[1]
-		pkg.Version = fields[2]
-	} else if len(fields) == 2 {
-		pkg.Name = fields[0]
-		pkg.ID = fields[1]
+
+	idPattern := regexp.MustCompile(`[A-Za-z0-9]+(?:\.[A-Za-z0-9._-]+)+`)
+	matches := idPattern.FindAllString(line, -1)
+	if len(matches) == 0 {
+		return pkg
 	}
-	
+
+	for _, match := range matches {
+		if strings.Count(match, ".") >= 1 && !strings.HasPrefix(match, "Node.") && !strings.HasPrefix(match, "Python.") {
+			if len(match) > len(pkg.ID) || pkg.ID == "" {
+				pkg.ID = match
+			}
+		}
+	}
+
+	if pkg.ID == "" && len(matches) > 0 {
+		for _, match := range matches {
+			if strings.Count(match, ".") >= 1 {
+				pkg.ID = match
+				break
+			}
+		}
+	}
+
+	if pkg.ID == "" {
+		return pkg
+	}
+
+	idIndex := strings.Index(line, pkg.ID)
+	if idIndex > 0 {
+		pkg.Name = strings.TrimSpace(line[:idIndex])
+	}
+
+	remaining := line[idIndex+len(pkg.ID):]
+	remaining = strings.TrimSpace(remaining)
+
+	fields := strings.Fields(remaining)
+	for i, f := range fields {
+		if f == "winget" || f == "msstore" {
+			if i > 0 {
+				versionPattern := regexp.MustCompile(`^[\d.]+$`)
+				if versionPattern.MatchString(fields[i-1]) {
+					pkg.Version = fields[i-1]
+				}
+			}
+			break
+		}
+	}
+
+	if pkg.Version == "" && len(fields) > 0 {
+		versionPattern := regexp.MustCompile(`^[\d.]+$`)
+		for _, f := range fields {
+			if versionPattern.MatchString(f) {
+				pkg.Version = f
+				break
+			}
+		}
+	}
+
 	return pkg
 }
 

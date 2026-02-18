@@ -5,7 +5,7 @@ BINARY_NAME=sis
 VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 DATE=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
-LDFLAGS=-ldflags "-X cmd.version=$(VERSION) -X cmd.commit=$(COMMIT) -X cmd.date=$(DATE)"
+LDFLAGS=-ldflags "-X swiftinstall/cmd.version=$(VERSION) -X swiftinstall/cmd.commit=$(COMMIT) -X swiftinstall/cmd.date=$(DATE)"
 
 # 默认构建当前平台
 build:

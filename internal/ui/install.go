@@ -28,6 +28,7 @@ type InstallModel struct {
 	parallel bool
 	width    int
 	height   int
+	mu       sync.Mutex
 }
 
 // tickMsg 定时消息
@@ -136,10 +137,12 @@ func (m InstallModel) runInstall() tea.Cmd {
 func (m *InstallModel) installPackage(index int) {
 	inst := installer.NewInstaller()
 	if inst == nil {
+		m.mu.Lock()
 		m.results[index] = &installer.InstallResult{
 			Status: installer.StatusFailed,
 			Error:  fmt.Errorf("unsupported platform"),
 		}
+		m.mu.Unlock()
 		return
 	}
 
@@ -150,9 +153,10 @@ func (m *InstallModel) installPackage(index int) {
 	}
 
 	result, _ := inst.Install(packageID)
+
+	m.mu.Lock()
 	m.results[index] = result
-	
-	// 更新表格
+
 	status := string(result.Status)
 	if result.Status == installer.StatusSuccess {
 		status = SuccessStyle.Render(i18n.T("common_success"))
@@ -161,10 +165,11 @@ func (m *InstallModel) installPackage(index int) {
 	} else if result.Status == installer.StatusSkipped {
 		status = WarningStyle.Render(i18n.T("install_skipped"))
 	}
-	
+
 	rows := m.table.Rows()
 	rows[index][2] = status
 	m.table.SetRows(rows)
+	m.mu.Unlock()
 }
 
 // installDoneMsg 安装完成消息

@@ -83,6 +83,11 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(cleanCmd)
 	rootCmd.AddCommand(statusCmd)
+
+	// 设置子命令标志
+	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
+	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
+	batchCmd.Flags().BoolP("parallel", "p", true, i18n.T("flag_parallel"))
 }
 
 func initConfig() {
@@ -232,12 +237,6 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		runStatus()
 	},
-}
-
-func init() {
-	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
-	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
-	batchCmd.Flags().BoolP("parallel", "p", true, i18n.T("flag_parallel"))
 }
 
 func runInteractiveTUI() {

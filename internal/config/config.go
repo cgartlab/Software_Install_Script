@@ -161,13 +161,30 @@ func (c *Config) loadFromFile() {
 	}
 
 	var config struct {
-		Software []Software `yaml:"software"`
+		Language             string     `yaml:"language"`
+		Theme                string     `yaml:"theme"`
+		ParallelInstall      bool       `yaml:"parallel_install"`
+		MaxWorkers           int        `yaml:"max_workers"`
+		AutoUpdateCheck      bool       `yaml:"auto_update_check"`
+		ConfirmBeforeInstall bool       `yaml:"confirm_before_install"`
+		Software             []Software `yaml:"software"`
 	}
 
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		c.software = c.getDefaultSoftware()
 		return
 	}
+
+	if config.Language != "" {
+		c.viper.Set("language", config.Language)
+	}
+	if config.Theme != "" {
+		c.viper.Set("theme", config.Theme)
+	}
+	c.viper.Set("parallel_install", config.ParallelInstall)
+	c.viper.Set("max_workers", config.MaxWorkers)
+	c.viper.Set("auto_update_check", config.AutoUpdateCheck)
+	c.viper.Set("confirm_before_install", config.ConfirmBeforeInstall)
 
 	c.software = config.Software
 }
@@ -178,9 +195,21 @@ func (c *Config) save() error {
 	defer c.mu.Unlock()
 
 	config := struct {
-		Software []Software `yaml:"software"`
+		Language             string     `yaml:"language"`
+		Theme                string     `yaml:"theme"`
+		ParallelInstall      bool       `yaml:"parallel_install"`
+		MaxWorkers           int        `yaml:"max_workers"`
+		AutoUpdateCheck      bool       `yaml:"auto_update_check"`
+		ConfirmBeforeInstall bool       `yaml:"confirm_before_install"`
+		Software             []Software `yaml:"software"`
 	}{
-		Software: c.software,
+		Language:             c.viper.GetString("language"),
+		Theme:                c.viper.GetString("theme"),
+		ParallelInstall:      c.viper.GetBool("parallel_install"),
+		MaxWorkers:           c.viper.GetInt("max_workers"),
+		AutoUpdateCheck:      c.viper.GetBool("auto_update_check"),
+		ConfirmBeforeInstall: c.viper.GetBool("confirm_before_install"),
+		Software:             c.software,
 	}
 
 	data, err := yaml.Marshal(config)

@@ -71,62 +71,105 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(100px);
-            opacity: 0.5;
+            will-change: transform, opacity;
         }
 
         .orb-1 {
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.35) 0%, rgba(245, 158, 11, 0.3) 50%, rgba(217, 119, 6, 0.25) 100%);
             top: -200px;
             right: -100px;
-            animation: float 20s ease-in-out infinite;
+            animation: orb1-float 18s ease-in-out infinite, orb-breathe 8s ease-in-out infinite;
         }
 
         .orb-2 {
             width: 500px;
             height: 500px;
-            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            background: linear-gradient(135deg, rgba(252, 211, 77, 0.32) 0%, rgba(251, 191, 36, 0.28) 50%, rgba(245, 158, 11, 0.22) 100%);
             bottom: -150px;
             left: -100px;
-            animation: float 25s ease-in-out infinite reverse;
+            animation: orb2-float 22s ease-in-out infinite, orb-breathe 10s ease-in-out infinite;
+            animation-delay: -5s, 0s;
         }
 
         .orb-3 {
             width: 400px;
             height: 400px;
-            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.28) 0%, rgba(253, 230, 138, 0.24) 50%, rgba(252, 211, 77, 0.18) 100%);
             top: 40%;
             left: 50%;
-            transform: translateX(-50%);
-            animation: float 22s ease-in-out infinite;
-            animation-delay: -5s;
+            transform: translate(-50%, 0);
+            animation: orb3-float 20s ease-in-out infinite, orb-breathe 12s ease-in-out infinite;
+            animation-delay: -10s, -3s;
         }
 
-        @keyframes float {
+        @keyframes orb1-float {
             0%, 100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0, 0);
             }
             25% {
-                transform: translate(30px, -30px) scale(1.05);
+                transform: translate(35px, -20px);
             }
             50% {
-                transform: translate(-20px, 20px) scale(0.95);
+                transform: translate(10px, 30px);
             }
             75% {
-                transform: translate(-30px, -20px) scale(1.02);
+                transform: translate(-25px, -10px);
+            }
+        }
+
+        @keyframes orb2-float {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            20% {
+                transform: translate(-30px, 15px);
+            }
+            40% {
+                transform: translate(20px, 35px);
+            }
+            60% {
+                transform: translate(40px, -8px);
+            }
+            80% {
+                transform: translate(-15px, -25px);
+            }
+        }
+
+        @keyframes orb3-float {
+            0%, 100% {
+                transform: translate(-50%, 0);
+            }
+            25% {
+                transform: translate(-50%, -15px);
+            }
+            50% {
+                transform: translate(calc(-50% + 15px), 20px);
+            }
+            75% {
+                transform: translate(calc(-50% - 10px), 10px);
+            }
+        }
+
+        @keyframes orb-breathe {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 0.85;
             }
         }
 
         @media (prefers-color-scheme: dark) {
             .orb-1 {
-                background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+                background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.1) 50%, rgba(217, 119, 6, 0.08) 100%);
             }
             .orb-2 {
-                background: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+                background: linear-gradient(135deg, rgba(252, 211, 77, 0.1) 0%, rgba(251, 191, 36, 0.08) 50%, rgba(245, 158, 11, 0.06) 100%);
             }
             .orb-3 {
-                background: linear-gradient(135deg, rgba(96, 165, 250, 0.1) 0%, rgba(59, 130, 246, 0.06) 100%);
+                background: linear-gradient(135deg, rgba(254, 243, 199, 0.08) 0%, rgba(253, 230, 138, 0.06) 50%, rgba(252, 211, 77, 0.04) 100%);
             }
         }
 
@@ -328,6 +371,223 @@
 
         .platform-content.active {
             display: block;
+        }
+
+        .script-section {
+            margin-top: 24px;
+        }
+
+        .script-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .script-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .script-badge {
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.15);
+            padding: 4px 10px;
+            border-radius: 100px;
+        }
+
+        .script-code-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .script-code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .script-code-lang {
+            font-size: 0.75rem;
+            color: #737373;
+            font-weight: 500;
+        }
+
+        .script-code-content {
+            padding: 16px 20px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .script-code-content pre {
+            margin: 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+            white-space: pre;
+        }
+
+        .script-code-content code {
+            font-family: inherit;
+        }
+
+        .sh-comment { color: #6a9955; }
+        .sh-keyword { color: #c586c0; }
+        .sh-string { color: #ce9178; }
+        .sh-variable { color: #9cdcfe; }
+        .sh-function { color: #dcdcaa; }
+        .sh-builtin { color: #4ec9b0; }
+        .sh-operator { color: #d4d4d4; }
+        .sh-number { color: #b5cea8; }
+        .sh-conditional { color: #c586c0; }
+        .sh-command { color: #fbbf24; }
+
+        .script-copy-btn {
+            padding: 8px 16px;
+            background: var(--accent-color);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .script-copy-btn:hover {
+            background: #b45309;
+            transform: translateY(-1px);
+        }
+
+        .script-copy-btn.copied {
+            background: #22c55e;
+        }
+
+        .info-section {
+            margin-top: 20px;
+        }
+
+        .info-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .info-tab {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .info-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .info-tab.active {
+            background: var(--accent-light);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .info-content {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .info-content.active {
+            display: block;
+        }
+
+        .info-content h4 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .info-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-content li {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .info-content li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .warning-box h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .distro-support {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .distro-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
         }
 
         .features-grid {
@@ -626,12 +886,53 @@
             .orb-1, .orb-2, .orb-3 {
                 width: 300px;
                 height: 300px;
+                filter: blur(80px);
+            }
+
+            .script-code-content {
+                padding: 12px 14px;
+                max-height: 300px;
+            }
+
+            .script-code-content pre {
+                font-size: 0.75rem;
+            }
+
+            .script-copy-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+
+            .info-tabs {
+                flex-wrap: wrap;
+            }
+
+            .info-tab {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+
+            .info-content {
+                padding: 16px;
+            }
+
+            .info-content li {
+                font-size: 0.8125rem;
+            }
+
+            .distro-support {
+                gap: 6px;
+            }
+
+            .distro-badge {
+                font-size: 0.6875rem;
+                padding: 4px 8px;
             }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .gradient-orb {
-                animation: none;
+                animation: none !important;
             }
         }
     </style>
@@ -671,6 +972,7 @@
                     <div class="platform-selector">
                         <button class="platform-btn active" onclick="switchPlatform('windows')">Windows</button>
                         <button class="platform-btn" onclick="switchPlatform('macos')">macOS</button>
+                        <button class="platform-btn" onclick="switchPlatform('linux')">Linux</button>
                     </div>
 
                     <div id="windows" class="platform-content active">
@@ -688,6 +990,228 @@
                                 <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
                             </div>
                             <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                        </div>
+                    </div>
+
+                    <div id="linux" class="platform-content">
+                        <div class="code-wrapper">
+                            <div class="code-block">
+                                <code>curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash</code>
+                            </div>
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                        </div>
+
+                        <div class="script-section">
+                            <div class="script-header">
+                                <span class="script-title">完整安装脚本</span>
+                                <span class="script-badge">已验证</span>
+                            </div>
+                            <div class="script-code-block">
+                                <div class="script-code-header">
+                                    <span class="script-code-lang">Shell Script (Bash)</span>
+                                    <button class="script-copy-btn" onclick="copyScript(this)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        复制脚本
+                                    </button>
+                                </div>
+                                <div class="script-code-content">
+                                    <pre><code><span class="sh-comment">#!/bin/bash</span>
+
+<span class="sh-comment"># SwiftInstall Linux 安装脚本</span>
+<span class="sh-comment"># 支持发行版: Ubuntu, Debian, CentOS, Fedora, Arch Linux 等</span>
+
+<span class="sh-variable">SCRIPT_VERSION</span><span class="sh-operator">=</span><span class="sh-string">"1.0.0"</span>
+<span class="sh-variable">INSTALL_DIR</span><span class="sh-operator">=</span><span class="sh-string">"/usr/local/bin"</span>
+<span class="sh-variable">BINARY_NAME</span><span class="sh-operator">=</span><span class="sh-string">"sis"</span>
+<span class="sh-variable">GITHUB_REPO</span><span class="sh-operator">=</span><span class="sh-string">"cgartlab/SwiftInstall"</span>
+
+<span class="sh-comment"># 颜色定义</span>
+<span class="sh-variable">RED</span><span class="sh-operator">=</span><span class="sh-string">'\033[0;31m'</span>
+<span class="sh-variable">GREEN</span><span class="sh-operator">=</span><span class="sh-string">'\033[0;32m'</span>
+<span class="sh-variable">YELLOW</span><span class="sh-operator">=</span><span class="sh-string">'\033[1;33m'</span>
+<span class="sh-variable">BLUE</span><span class="sh-operator">=</span><span class="sh-string">'\033[0;34m'</span>
+<span class="sh-variable">NC</span><span class="sh-operator">=</span><span class="sh-string">'\033[0m'</span>
+
+<span class="sh-comment"># 日志函数</span>
+<span class="sh-function">log_info</span>() { <span class="sh-builtin">echo</span> <span class="sh-string">-e "</span><span class="sh-variable">${BLUE}</span>[INFO]<span class="sh-variable">${NC}</span> <span class="sh-variable">$1</span><span class="sh-string">"</span>; }
+<span class="sh-function">log_success</span>() { <span class="sh-builtin">echo</span> <span class="sh-string">-e "</span><span class="sh-variable">${GREEN}</span>[SUCCESS]<span class="sh-variable">${NC}</span> <span class="sh-variable">$1</span><span class="sh-string">"</span>; }
+<span class="sh-function">log_warn</span>() { <span class="sh-builtin">echo</span> <span class="sh-string">-e "</span><span class="sh-variable">${YELLOW}</span>[WARN]<span class="sh-variable">${NC}</span> <span class="sh-variable">$1</span><span class="sh-string">"</span>; }
+<span class="sh-function">log_error</span>() { <span class="sh-builtin">echo</span> <span class="sh-string">-e "</span><span class="sh-variable">${RED}</span>[ERROR]<span class="sh-variable">${NC}</span> <span class="sh-variable">$1</span><span class="sh-string">"</span>; }
+
+<span class="sh-comment"># 检测 Linux 发行版</span>
+<span class="sh-function">detect_distro</span>() {
+    <span class="sh-keyword">if</span> [ -f /etc/os-release ]; <span class="sh-keyword">then</span>
+        <span class="sh-builtin">.</span> /etc/os-release
+        <span class="sh-builtin">echo</span> <span class="sh-string">"</span><span class="sh-variable">$ID</span><span class="sh-string">"</span>
+    <span class="sh-keyword">elif</span> [ -f /etc/redhat-release ]; <span class="sh-keyword">then</span>
+        <span class="sh-builtin">echo</span> <span class="sh-string">"rhel"</span>
+    <span class="sh-keyword">else</span>
+        <span class="sh-builtin">echo</span> <span class="sh-string">"unknown"</span>
+    <span class="sh-keyword">fi</span>
+}
+
+<span class="sh-comment"># 检查 root 权限</span>
+<span class="sh-function">check_root</span>() {
+    <span class="sh-keyword">if</span> [ <span class="sh-string">"</span><span class="sh-variable">$EUID</span><span class="sh-string">"</span> -ne <span class="sh-number">0</span> ]; <span class="sh-keyword">then</span>
+        log_warn <span class="sh-string">"需要 root 权限，正在使用 sudo..."</span>
+        <span class="sh-keyword">if</span> ! <span class="sh-builtin">command</span> -v sudo &> /dev/null; <span class="sh-keyword">then</span>
+            log_error <span class="sh-string">"未找到 sudo 命令，请以 root 用户运行此脚本"</span>
+            <span class="sh-builtin">exit</span> <span class="sh-number">1</span>
+        <span class="sh-keyword">fi</span>
+        <span class="sh-builtin">exec</span> sudo <span class="sh-string">"</span><span class="sh-variable">$0</span><span class="sh-string">"</span> <span class="sh-string">"</span><span class="sh-variable">$@</span><span class="sh-string">"</span>
+    <span class="sh-keyword">fi</span>
+}
+
+<span class="sh-comment"># 检查并安装依赖</span>
+<span class="sh-function">install_dependencies</span>() {
+    <span class="sh-variable">DISTRO</span><span class="sh-operator">=</span><span class="sh-function">$(detect_distro)</span>
+    log_info <span class="sh-string">"检测到发行版: </span><span class="sh-variable">${DISTRO}</span><span class="sh-string">"</span>
+    
+    <span class="sh-keyword">case</span> <span class="sh-variable">$DISTRO</span> <span class="sh-keyword">in</span>
+        ubuntu|debian|linuxmint|pop)
+            log_info <span class="sh-string">"更新软件包列表..."</span>
+            apt-get update -qq
+            log_info <span class="sh-string">"安装依赖..."</span>
+            apt-get install -y -qq curl wget ca-certificates
+            ;;
+        centos|rhel|rocky|almalinux)
+            log_info <span class="sh-string">"安装依赖..."</span>
+            yum install -y -q curl wget ca-certificates <span class="sh-operator">||</span> \
+            dnf install -y -q curl wget ca-certificates
+            ;;
+        fedora)
+            log_info <span class="sh-string">"安装依赖..."</span>
+            dnf install -y -q curl wget ca-certificates
+            ;;
+        arch|manjaro|endeavouros)
+            log_info <span class="sh-string">"安装依赖..."</span>
+            pacman -Sy --noconfirm curl wget ca-certificates
+            ;;
+        opensuse*)
+            log_info <span class="sh-string">"安装依赖..."</span>
+            zypper install -y curl wget ca-certificates
+            ;;
+        *)
+            log_warn <span class="sh-string">"未知发行版，尝试继续安装..."</span>
+            <span class="sh-keyword">if</span> ! <span class="sh-builtin">command</span> -v curl &> /dev/null; <span class="sh-keyword">then</span>
+                log_error <span class="sh-string">"需要 curl 命令，请手动安装后重试"</span>
+                <span class="sh-builtin">exit</span> <span class="sh-number">1</span>
+            <span class="sh-keyword">fi</span>
+            ;;
+    <span class="sh-keyword">esac</span>
+}
+
+<span class="sh-comment"># 获取系统架构</span>
+<span class="sh-function">get_arch</span>() {
+    <span class="sh-variable">ARCH</span><span class="sh-operator">=</span><span class="sh-function">$(uname -m)</span>
+    <span class="sh-keyword">case</span> <span class="sh-variable">$ARCH</span> <span class="sh-keyword">in</span>
+        x86_64|amd64)  <span class="sh-builtin">echo</span> <span class="sh-string">"amd64"</span> ;;
+        aarch64|arm64) <span class="sh-builtin">echo</span> <span class="sh-string">"arm64"</span> ;;
+        armv7l|armhf)  <span class="sh-builtin">echo</span> <span class="sh-string">"arm"</span> ;;
+        i386|i686)     <span class="sh-builtin">echo</span> <span class="sh-string">"386"</span> ;;
+        *)             <span class="sh-builtin">echo</span> <span class="sh-string">"amd64"</span> ;;
+    <span class="sh-keyword">esac</span>
+}
+
+<span class="sh-comment"># 下载并安装 SwiftInstall</span>
+<span class="sh-function">install_swiftinstall</span>() {
+    <span class="sh-variable">ARCH</span><span class="sh-operator">=</span><span class="sh-function">$(get_arch)</span>
+    <span class="sh-variable">DOWNLOAD_URL</span><span class="sh-operator">=</span><span class="sh-string">"https://github.com/</span><span class="sh-variable">${GITHUB_REPO}</span><span class="sh-string">/releases/latest/download/sis-linux-</span><span class="sh-variable">${ARCH}</span><span class="sh-string">"</span>
+    
+    log_info <span class="sh-string">"系统架构: </span><span class="sh-variable">${ARCH}</span><span class="sh-string">"</span>
+    log_info <span class="sh-string">"下载 SwiftInstall..."</span>
+    
+    <span class="sh-keyword">if</span> ! wget -q --show-progress -O /tmp/sis <span class="sh-string">"</span><span class="sh-variable">${DOWNLOAD_URL}</span><span class="sh-string">"</span>; <span class="sh-keyword">then</span>
+        log_error <span class="sh-string">"下载失败，请检查网络连接"</span>
+        <span class="sh-builtin">exit</span> <span class="sh-number">1</span>
+    <span class="sh-keyword">fi</span>
+    
+    log_info <span class="sh-string">"安装 SwiftInstall 到 </span><span class="sh-variable">${INSTALL_DIR}</span><span class="sh-string">..."</span>
+    <span class="sh-builtin">chmod</span> +x /tmp/sis
+    mv /tmp/sis <span class="sh-string">"</span><span class="sh-variable">${INSTALL_DIR}</span>/<span class="sh-variable">${BINARY_NAME}</span><span class="sh-string">"</span>
+    
+    log_success <span class="sh-string">"安装完成!"</span>
+    log_info <span class="sh-string">"运行 'sis --help' 开始使用"</span>
+}
+
+<span class="sh-comment"># 主函数</span>
+<span class="sh-function">main</span>() {
+    log_info <span class="sh-string">"SwiftInstall Linux 安装脚本 v</span><span class="sh-variable">${SCRIPT_VERSION}</span><span class="sh-string">"</span>
+    log_info <span class="sh-string">"======================================"</span>
+    
+    check_root
+    install_dependencies
+    install_swiftinstall
+}
+
+main <span class="sh-string">"</span><span class="sh-variable">$@</span><span class="sh-string">"</span></code></pre>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-tabs">
+                                    <button class="info-tab active" onclick="switchInfoTab('usage')">使用说明</button>
+                                    <button class="info-tab" onclick="switchInfoTab('requirements')">前置条件</button>
+                                    <button class="info-tab" onclick="switchInfoTab('security')">安全提示</button>
+                                </div>
+
+                                <div id="usage" class="info-content active">
+                                    <h4>执行步骤</h4>
+                                    <ul>
+                                        <li>打开终端，复制上方脚本内容保存为 install.sh</li>
+                                        <li>执行 <code>chmod +x install.sh</code> 添加执行权限</li>
+                                        <li>运行 <code>./install.sh</code> 或 <code>bash install.sh</code></li>
+                                        <li>等待安装完成，输入 <code>sis --help</code> 验证安装</li>
+                                    </ul>
+                                    <div class="distro-support">
+                                        <span class="distro-badge">Ubuntu 18.04+</span>
+                                        <span class="distro-badge">Debian 10+</span>
+                                        <span class="distro-badge">CentOS 7+</span>
+                                        <span class="distro-badge">Fedora 30+</span>
+                                        <span class="distro-badge">Arch Linux</span>
+                                        <span class="distro-badge">openSUSE</span>
+                                    </div>
+                                </div>
+
+                                <div id="requirements" class="info-content">
+                                    <h4>系统要求</h4>
+                                    <ul>
+                                        <li>Linux 内核版本 3.2 或更高</li>
+                                        <li>至少 50MB 可用磁盘空间</li>
+                                        <li>网络连接（用于下载软件包）</li>
+                                        <li>root 权限或 sudo 访问权限</li>
+                                    </ul>
+                                    <h4 style="margin-top: 16px;">必需工具</h4>
+                                    <ul>
+                                        <li>curl 或 wget（用于下载文件）</li>
+                                        <li>ca-certificates（用于 HTTPS 连接）</li>
+                                    </ul>
+                                </div>
+
+                                <div id="security" class="info-content">
+                                    <h4>安全建议</h4>
+                                    <ul>
+                                        <li>执行前请先阅读并理解脚本内容</li>
+                                        <li>建议从官方 GitHub 仓库下载脚本</li>
+                                        <li>验证脚本的 SHA256 校验和（如适用）</li>
+                                        <li>在生产环境中，建议先在测试环境验证</li>
+                                    </ul>
+                                    <div class="warning-box">
+                                        <h5>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                            </svg>
+                                            重要提示
+                                        </h5>
+                                        <p>此脚本需要 root 权限执行。请确保您信任脚本来源，并在执行前备份重要数据。如有疑问，请逐行检查脚本内容或联系开发者。</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -830,6 +1354,30 @@
                     btn.classList.remove('copied');
                 }, 2000);
             });
+        }
+
+        function copyScript(btn) {
+            const codeElement = btn.closest('.script-code-block').querySelector('code');
+            let scriptContent = codeElement.innerText;
+            scriptContent = scriptContent.replace(/^(#!\/bin\/bash)/, '#!/bin/bash');
+            
+            navigator.clipboard.writeText(scriptContent).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 已复制';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function switchInfoTab(tabId) {
+            const linuxSection = document.getElementById('linux');
+            linuxSection.querySelectorAll('.info-tab').forEach(el => el.classList.remove('active'));
+            linuxSection.querySelectorAll('.info-content').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         }
     </script>
 </body>

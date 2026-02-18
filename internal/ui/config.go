@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"swiftinstall/internal/config"
@@ -622,10 +623,10 @@ func RunStatus() {
 
 // getOSName 获取操作系统名称
 func getOSName() string {
-	return "Windows"
+	return runtime.GOOS
 }
 
 // getArch 获取架构
 func getArch() string {
-	return "amd64"
+	return runtime.GOARCH
 }
