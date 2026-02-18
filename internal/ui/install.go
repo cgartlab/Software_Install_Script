@@ -18,17 +18,18 @@ import (
 
 // InstallModel 安装界面模型
 type InstallModel struct {
-	packages []config.Software
-	results  []*installer.InstallResult
-	progress progress.Model
-	table    table.Model
-	status   string
-	quitting bool
-	done     bool
-	parallel bool
-	width    int
-	height   int
-	mu       sync.Mutex
+	packages  []config.Software
+	results   []*installer.InstallResult
+	progress  progress.Model
+	table     table.Model
+	status    string
+	quitting  bool
+	done      bool
+	parallel  bool
+	width     int
+	height    int
+	mu        sync.Mutex
+	showAbout bool
 }
 
 // tickMsg 定时消息
@@ -72,9 +73,8 @@ func NewInstallModel(packages []config.Software, parallel bool) InstallModel {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color(ColorText)).
-		Background(lipgloss.Color(ColorSecondary)).
-		Bold(false)
+		Foreground(lipgloss.Color(ColorPrimaryBright)).
+		Bold(true)
 	t.SetStyles(s)
 
 	return InstallModel{
@@ -166,6 +166,13 @@ func (m *InstallModel) installPackage(index int) {
 			Error:   err,
 		}
 	}
+	if result == nil {
+		result = &installer.InstallResult{
+			Package: installer.PackageInfo{ID: packageID},
+			Status:  installer.StatusFailed,
+			Error:   fmt.Errorf("install failed with empty result"),
+		}
+	}
 
 	m.mu.Lock()
 	m.results[index] = result
@@ -204,6 +211,14 @@ func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
+		case "a":
+			m.showAbout = !m.showAbout
+			return m, nil
+		case "esc":
+			if m.showAbout {
+				m.showAbout = false
+				return m, nil
+			}
 		case "enter":
 			if m.done {
 				return m, tea.Quit
@@ -218,7 +233,7 @@ func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				completed++
 			}
 		}
-		
+
 		if completed < len(m.packages) {
 			percent := float64(completed) / float64(len(m.packages))
 			m.progress.SetPercent(percent)
@@ -250,6 +265,13 @@ func (m *InstallModel) View() string {
 
 	var b strings.Builder
 
+	if m.showAbout {
+		b.WriteString(GetAboutText())
+		b.WriteString("\n\n")
+		b.WriteString(HelpStyle.Render(i18n.T("common_back") + " Esc | " + i18n.T("common_cancel") + " q"))
+		return b.String()
+	}
+
 	// 标题
 	b.WriteString(TitleStyle.Render(i18n.T("install_title")))
 	b.WriteString("\n\n")
@@ -259,7 +281,11 @@ func (m *InstallModel) View() string {
 	b.WriteString("\n\n")
 
 	// 状态
-	b.WriteString(InfoStyle.Render(m.status))
+	if m.done {
+		b.WriteString(SuccessStyle.Render(m.status))
+	} else {
+		b.WriteString(HighlightStyle.Render(m.status))
+	}
 	b.WriteString("\n\n")
 
 	// 表格
@@ -293,10 +319,10 @@ func (m *InstallModel) View() string {
 			b.WriteString(WarningStyle.Render(fmt.Sprintf("⊘ %s: %d", i18n.T("install_skipped"), skipped)))
 		}
 		b.WriteString("\n\n")
-		b.WriteString(HelpStyle.Render(i18n.T("common_confirm") + " Enter | " + i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render(i18n.T("common_confirm") + " Enter | a " + i18n.T("menu_about") + " | " + i18n.T("common_cancel") + " q"))
 	} else {
 		b.WriteString("\n")
-		b.WriteString(HelpStyle.Render(i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render("a " + i18n.T("menu_about") + " | " + i18n.T("common_cancel") + " q"))
 	}
 
 	return b.String()

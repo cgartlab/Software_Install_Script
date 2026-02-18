@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"swiftinstall/internal/appinfo"
 	"swiftinstall/internal/config"
 	"swiftinstall/internal/i18n"
 	"swiftinstall/internal/installer"
@@ -72,9 +73,8 @@ func NewConfigModel() ConfigModel {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color(ColorText)).
-		Background(lipgloss.Color(ColorSecondary)).
-		Bold(false)
+		Foreground(lipgloss.Color(ColorPrimaryBright)).
+		Bold(true)
 	t.SetStyles(s)
 
 	// 创建输入框
@@ -171,6 +171,27 @@ func (m ConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		case "enter":
+			if m.mode == "list" && len(m.packages) > 0 {
+				m.mode = "edit"
+				m.selected = m.table.Cursor()
+				if m.selected < len(m.packages) {
+					pkg := m.packages[m.selected]
+					m.inputs[0].SetValue(pkg.Name)
+					id := pkg.ID
+					if id == "" {
+						id = pkg.Package
+					}
+					m.inputs[1].SetValue(id)
+					m.inputs[2].SetValue(pkg.Category)
+				}
+				m.focusIndex = 0
+				for i := range m.inputs {
+					m.inputs[i].Blur()
+				}
+				m.inputs[0].Focus()
+				return m, textinput.Blink
+			}
+
 			switch m.mode {
 			case "add":
 				if m.focusIndex < len(m.inputs)-1 {
@@ -257,7 +278,7 @@ func (m *ConfigModel) savePackage() {
 	category := m.inputs[2].Value()
 
 	if name == "" || id == "" {
-		m.message = "Name and ID are required"
+		m.message = i18n.T("config_required")
 		m.messageType = "error"
 		return
 	}
@@ -280,18 +301,25 @@ func (m *ConfigModel) savePackage() {
 	m.refreshTable()
 
 	m.mode = "list"
-	m.message = fmt.Sprintf("Added: %s", name)
+	m.message = fmt.Sprintf("%s: %s", i18n.T("config_added"), name)
 	m.messageType = "success"
 }
 
 // updatePackage 更新包
 func (m *ConfigModel) updatePackage() {
+	if m.selected < 0 || m.selected >= len(m.packages) {
+		m.message = i18n.T("config_invalid_selection")
+		m.messageType = "error"
+		m.mode = "list"
+		return
+	}
+
 	name := m.inputs[0].Value()
 	id := m.inputs[1].Value()
 	category := m.inputs[2].Value()
 
 	if name == "" || id == "" {
-		m.message = "Name and ID are required"
+		m.message = i18n.T("config_required")
 		m.messageType = "error"
 		return
 	}
@@ -314,7 +342,7 @@ func (m *ConfigModel) updatePackage() {
 	m.refreshTable()
 
 	m.mode = "list"
-	m.message = fmt.Sprintf("Updated: %s", name)
+	m.message = fmt.Sprintf("%s: %s", i18n.T("config_updated"), name)
 	m.messageType = "success"
 }
 
@@ -340,7 +368,7 @@ func (m *ConfigModel) deletePackage() {
 	m.refreshTable()
 
 	m.mode = "list"
-	m.message = fmt.Sprintf("Removed: %s", name)
+	m.message = fmt.Sprintf("%s: %s", i18n.T("config_removed"), name)
 	m.messageType = "success"
 }
 
@@ -360,6 +388,13 @@ func (m *ConfigModel) refreshTable() {
 		})
 	}
 	m.table.SetRows(rows)
+	if len(rows) == 0 {
+		m.table.SetCursor(0)
+		return
+	}
+	if m.table.Cursor() >= len(rows) {
+		m.table.SetCursor(len(rows) - 1)
+	}
 }
 
 // View 视图
@@ -402,7 +437,7 @@ func (m ConfigModel) View() string {
 		b.WriteString("\n")
 		b.WriteString(HelpStyle.Render(
 			i18n.T("config_add") + " a | " +
-				i18n.T("config_edit") + " e | " +
+				i18n.T("config_edit") + " Enter/e | " +
 				i18n.T("config_remove") + " d/r | " +
 				i18n.T("common_cancel") + " q",
 		))
@@ -464,19 +499,21 @@ func (m ConfigModel) View() string {
 	case "remove":
 		if m.selected < len(m.packages) {
 			pkg := m.packages[m.selected]
-			b.WriteString(WarningStyle.Render("Confirm removal:"))
+			b.WriteString(WarningStyle.Render(i18n.T("config_remove_confirm")))
 			b.WriteString("\n\n")
-			b.WriteString(fmt.Sprintf("  Name: %s\n", pkg.Name))
+			b.WriteString(fmt.Sprintf("  %s: %s\n", i18n.T("config_name"), pkg.Name))
 			id := pkg.ID
 			if id == "" {
 				id = pkg.Package
 			}
-			b.WriteString(fmt.Sprintf("  ID: %s\n", id))
+			b.WriteString(fmt.Sprintf("  %s: %s\n", i18n.T("config_id"), id))
 			b.WriteString("\n")
 			b.WriteString(HelpStyle.Render(i18n.T("common_yes") + " y | " + i18n.T("common_no") + " n"))
 		}
 	}
 
+	b.WriteString("\n\n")
+	b.WriteString(HelpStyle.Render(appinfo.Copyright))
 	return b.String()
 }
 
