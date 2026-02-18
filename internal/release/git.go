@@ -109,8 +109,8 @@ func (g *GitManager) GetDiffSinceTag(tag string) (*GitDiff, error) {
 				AddedLines:   added,
 				DeletedLines: deleted,
 				Modified:     true,
-				IsNew:        parts[0] == "-",
-				IsDeleted:    parts[1] == "-",
+				IsNew:        parts[1] == "-",
+				IsDeleted:    parts[0] == "-",
 			}
 			diff.Files = append(diff.Files, fileChange)
 			diff.AddedLines += added

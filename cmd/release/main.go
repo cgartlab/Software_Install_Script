@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
 	"swiftinstall/internal/release"
 )
@@ -235,8 +234,4 @@ func init() {
 		fmt.Fprintln(os.Stderr, "  # Skip tests and deployment")
 		fmt.Fprintf(os.Stderr, "  %s -project myapp -skip-tests -skip-deploy\n", os.Args[0])
 	}
-}
-
-func getCurrentTime() time.Time {
-	return time.Now()
 }
