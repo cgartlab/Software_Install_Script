@@ -2,7 +2,7 @@
 
 All notable changes to SwiftInstall will be documented in this file.
 
-## [Unreleased]
+## [0.1.3] - 2026-02-18
 
 ### Fixed
 - 修复 `InstallModel` 并发安全问题，添加 `sync.Mutex` 保护共享数据

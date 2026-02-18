@@ -221,7 +221,7 @@ func outputResult(result *release.ReleaseResult) error {
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
-		fmt.Fprintln(os.Stderr, "Automated version release and deployment tool\n")
+		fmt.Fprintln(os.Stderr, "Automated version release and deployment tool")
 		fmt.Fprintln(os.Stderr, "Options:")
 		flag.PrintDefaults()
 		fmt.Fprintln(os.Stderr, "\nExamples:")
