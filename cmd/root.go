@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"swiftinstall/internal/appinfo"
 	"swiftinstall/internal/config"
 	"swiftinstall/internal/i18n"
+	"swiftinstall/internal/installer"
 	"swiftinstall/internal/ui"
 )
 
@@ -33,6 +36,7 @@ var rootCmd = &cobra.Command{
 		fmt.Println(ui.SubtitleStyle.Render(fmt.Sprintf("Version: %s | Author: %s", version, appinfo.Author)))
 		fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
 		fmt.Println()
+		runStartupChecks()
 		fmt.Println(ui.InfoStyle.Render("Usage: sis <command> [flags]"))
 		fmt.Println()
 		fmt.Println(ui.HelpStyle.Render("Commands:"))
@@ -41,7 +45,9 @@ var rootCmd = &cobra.Command{
 		fmt.Println(ui.HelpStyle.Render("  search      Search for software packages"))
 		fmt.Println(ui.HelpStyle.Render("  list        List configured packages"))
 		fmt.Println(ui.HelpStyle.Render("  config      Manage configuration"))
+		fmt.Println(ui.HelpStyle.Render("  edit-list   Edit software list in config file"))
 		fmt.Println(ui.HelpStyle.Render("  status      Show system status"))
+		fmt.Println(ui.HelpStyle.Render("  uninstall-all One-click uninstall configured software"))
 		fmt.Println(ui.HelpStyle.Render("  about       Show author and project information"))
 		fmt.Println(ui.HelpStyle.Render("  help        Show complete help document"))
 		fmt.Println()
@@ -87,9 +93,11 @@ func printComprehensiveHelp() {
 	fmt.Println(ui.InfoStyle.Render("Commands:"))
 	fmt.Println("  sis install [package...]          Install from config or explicit package IDs")
 	fmt.Println("  sis uninstall [package...]        Uninstall packages from config or explicit IDs")
+	fmt.Println("  sis uninstall-all                 One-click uninstall all configured software")
 	fmt.Println("  sis search <query>                Search packages")
 	fmt.Println("  sis list                          Show configured software")
 	fmt.Println("  sis config                        Open configuration manager")
+	fmt.Println("  sis edit-list                     Edit software list directly in config file")
 	fmt.Println("  sis wizard                        Start setup wizard")
 	fmt.Println("  sis batch [file]                  Batch install from file/config")
 	fmt.Println("  sis export --format json --output out.json")
@@ -119,6 +127,62 @@ func printComprehensiveHelp() {
 	fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
 }
 
+func runStartupChecks() {
+	handleAutoUpdatePreference()
+	if config.GetBool("auto_update_check") {
+		runAutomaticUpdateCheck()
+	}
+}
+
+func handleAutoUpdatePreference() {
+	if config.GetBool("auto_update_prompted") {
+		return
+	}
+	fmt.Print(ui.InfoStyle.Render("Enable automatic update check on startup? [Y/n]: "))
+	var ans string
+	if _, err := fmt.Scanln(&ans); err != nil {
+		ans = ""
+	}
+	enabled := ans == "" || strings.EqualFold(ans, "y") || strings.EqualFold(ans, "yes")
+	if err := config.SetAndSave("auto_update_check", enabled); err != nil {
+		log.Printf("Warning: failed to persist auto_update_check: %v", err)
+	}
+	if err := config.SetAndSave("auto_update_prompted", true); err != nil {
+		log.Printf("Warning: failed to persist auto_update_prompted: %v", err)
+	}
+}
+
+func runAutomaticUpdateCheck() {
+	fmt.Println(ui.InfoStyle.Render("Auto update check..."))
+	inst := installer.NewInstaller()
+	if inst == nil {
+		fmt.Println(ui.WarningStyle.Render("Skipped: unsupported platform for package manager update check"))
+		return
+	}
+	if err := inst.Update(); err != nil {
+		fmt.Println(ui.WarningStyle.Render("Update check finished with warnings: " + err.Error()))
+		return
+	}
+	fmt.Println(ui.SuccessStyle.Render("✓ Package manager metadata is up to date"))
+	fmt.Println(ui.HelpStyle.Render("Checked at: " + time.Now().Format(time.RFC3339)))
+}
+
+func ensureEnvironmentReady() bool {
+	report := installer.CheckEnvironment()
+	if report.Ready {
+		if !config.GetBool("env_checked") {
+			_ = config.SetAndSave("env_checked", true)
+		}
+		return true
+	}
+	fmt.Println(ui.ErrorStyle.Render("Environment check failed:"))
+	for _, d := range report.Details {
+		fmt.Println("  -", d)
+	}
+	fmt.Println(ui.WarningStyle.Render("Please fix environment issues before installation/search."))
+	return false
+}
+
 func Execute() error {
 	return rootCmd.Execute()
 }
@@ -143,6 +207,8 @@ func init() {
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(aboutCmd)
 	rootCmd.AddCommand(helpDocCmd)
+	rootCmd.AddCommand(uninstallAllCmd)
+	rootCmd.AddCommand(editListCmd)
 
 	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
 	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
@@ -347,6 +413,30 @@ var aboutCmd = &cobra.Command{
 	},
 }
 
+var uninstallAllCmd = &cobra.Command{
+	Use:   "uninstall-all",
+	Short: "一键卸载配置内所有软件",
+	Long:  "一键卸载配置内所有软件（跨平台）",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		runUninstallFromConfig()
+	},
+}
+
+var editListCmd = &cobra.Command{
+	Use:   "edit-list",
+	Short: "自由编辑软件安装列表",
+	Long:  "在默认编辑器中直接编辑配置文件的软件安装列表",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		runEditSoftwareList()
+	},
+}
+
 var helpDocCmd = &cobra.Command{
 	Use:   "help",
 	Short: i18n.T("cmd_help_short"),
@@ -361,6 +451,9 @@ func runInteractiveTUI() {
 }
 
 func runInstallFromConfig() {
+	if !ensureEnvironmentReady() {
+		os.Exit(1)
+	}
 	cfg := config.Get()
 	packages := cfg.GetSoftwareList()
 	if len(packages) == 0 {
@@ -371,6 +464,9 @@ func runInstallFromConfig() {
 }
 
 func runInstallPackages(packages []string) {
+	if !ensureEnvironmentReady() {
+		os.Exit(1)
+	}
 	ui.RunInstallByName(packages, false)
 }
 
@@ -389,6 +485,9 @@ func runUninstallPackages(packages []string) {
 }
 
 func runSearch(query string) {
+	if !ensureEnvironmentReady() {
+		os.Exit(1)
+	}
 	ui.RunSearch(query)
 }
 
@@ -420,6 +519,25 @@ func runExport(format, output string) {
 	cfg := config.Get()
 	packages := cfg.GetSoftwareList()
 	ui.RunExport(packages, format, output)
+}
+
+func runEditSoftwareList() {
+	cfg := config.Get()
+	path := cfg.GetConfigPath()
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vi"
+	}
+	cmd := exec.Command(editor, path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to open editor: " + err.Error()))
+		return
+	}
+	config.Reload()
+	fmt.Println(ui.SuccessStyle.Render("✓ software list updated"))
 }
 
 func runUpdate() {
