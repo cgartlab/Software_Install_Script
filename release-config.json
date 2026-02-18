@@ -1,0 +1,101 @@
+{
+  "versioning": {
+    "strategy": "semantic",
+    "prereleaseEnabled": false,
+    "prereleaseIdentifier": "rc",
+    "commitMessagePatterns": [
+      "^feat(\\(.+\\))?!?:",
+      "^fix(\\(.+\\))?:",
+      "^BREAKING CHANGE:"
+    ],
+    "versionFilePattern": "VERSION",
+    "branchPatterns": {
+      "main": "release",
+      "develop": "prerelease",
+      "feature/*": "none",
+      "hotfix/*": "patch"
+    }
+  },
+  "autoRelease": {
+    "enabled": true,
+    "triggerBranches": ["main"],
+    "requireApproval": true,
+    "approvalThreshold": 0.8,
+    "maxAutoBumpLevel": "minor",
+    "quietPeriodHours": 2,
+    "minCommitsThreshold": 1
+  },
+  "build": {
+    "platforms": [
+      {"goos": "windows", "goarch": "amd64", "suffix": ".exe"},
+      {"goos": "windows", "goarch": "arm64", "suffix": ".exe"},
+      {"goos": "linux", "goarch": "amd64", "suffix": ""},
+      {"goos": "linux", "goarch": "arm64", "suffix": ""},
+      {"goos": "darwin", "goarch": "amd64", "suffix": ""},
+      {"goos": "darwin", "goarch": "arm64", "suffix": ""}
+    ],
+    "artifactNaming": "{{.Name}}-{{.Version}}-{{.GOOS}}-{{.GOARCH}}{{.Suffix}}",
+    "buildTimeout": 30,
+    "cacheEnabled": true,
+    "buildArgs": {
+      "-ldflags": "-s -w"
+    }
+  },
+  "test": {
+    "enabled": true,
+    "minCoverage": 0.8,
+    "timeout": 10,
+    "testSuites": ["./..."],
+    "parallel": true,
+    "requiredTests": ["unit"]
+  },
+  "deploy": {
+    "enabled": true,
+    "rollbackStrategy": "automatic",
+    "healthCheckPath": "/health",
+    "healthCheckTimeout": 30,
+    "environments": [
+      {
+        "name": "staging",
+        "type": "testing",
+        "autoDeploy": true,
+        "deployStrategy": "rolling",
+        "variables": {
+          "BASE_URL": "https://staging.example.com"
+        }
+      },
+      {
+        "name": "production",
+        "type": "production",
+        "autoDeploy": false,
+        "deployStrategy": "blue-green",
+        "variables": {
+          "BASE_URL": "https://example.com"
+        }
+      }
+    ]
+  },
+  "notifications": {
+    "enabled": false,
+    "channels": ["slack", "email"],
+    "webhooks": [],
+    "slack": {
+      "webhookURL": "",
+      "channel": "#releases",
+      "username": "Release Bot"
+    },
+    "email": {
+      "smtpServer": "smtp.example.com",
+      "smtpPort": 587,
+      "recipients": ["team@example.com"]
+    }
+  },
+  "logging": {
+    "level": "info",
+    "outputPath": "./logs/release.log",
+    "maxSize": 100,
+    "maxBackups": 3,
+    "maxAge": 7,
+    "compress": true
+  }
+}
