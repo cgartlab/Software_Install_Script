@@ -1,0 +1,190 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Perform dry run'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.analyze.outputs.should_release }}
+      version_type: ${{ steps.analyze.outputs.version_type }}
+      new_version: ${{ steps.analyze.outputs.new_version }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build release tool
+        run: |
+          go build -o release-tool ./cmd/release
+
+      - name: Analyze changes
+        id: analyze
+        run: |
+          CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          
+          COMMITS=$(git log $CURRENT_TAG..HEAD --oneline 2>/dev/null | wc -l)
+          
+          if [ "$COMMITS" -eq 0 ]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "No new commits since last release"
+            exit 0
+          fi
+          
+          ./release-tool -project swiftinstall -tag $CURRENT_TAG -dry-run -output json > analysis.json
+          
+          VERSION_TYPE=$(cat analysis.json | jq -r '.changeType')
+          NEW_VERSION=$(cat analysis.json | jq -r '.newVersion')
+          CONFIDENCE=$(cat analysis.json | jq -r '.confidence')
+          
+          echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "confidence=$CONFIDENCE" >> $GITHUB_OUTPUT
+          
+          if [ "$VERSION_TYPE" != "none" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis
+          path: analysis.json
+
+  release:
+    needs: analyze
+    if: needs.analyze.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Download analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: analysis
+
+      - name: Read analysis
+        id: read_analysis
+        run: |
+          NEW_VERSION=$(cat analysis.json | jq -r '.newVersion')
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build release tool
+        run: |
+          go build -o release-tool ./cmd/release
+
+      - name: Run tests
+        run: |
+          go test -v -coverprofile=coverage.out ./...
+
+      - name: Build all platforms
+        run: |
+          mkdir -p release
+          
+          PLATFORMS=(
+            "windows/amd64/.exe"
+            "windows/arm64/.exe"
+            "linux/amd64/"
+            "linux/arm64/"
+            "darwin/amd64/"
+            "darwin/arm64/"
+          )
+          
+          VERSION="${{ steps.read_analysis.outputs.new_version }}"
+          
+          for PLATFORM in "${PLATFORMS[@]}"; do
+            IFS='/' read -r GOOS GOARCH SUFFIX <<< "$PLATFORM"
+            OUTPUT="sis-${GOOS}-${GOARCH}${SUFFIX}"
+            
+            GOOS=$GOOS GOARCH=$GOARCH go build \
+              -ldflags "-s -w -X main.version=${VERSION}" \
+              -o "release/${OUTPUT}" \
+              main.go
+            
+            echo "Built: ${OUTPUT}"
+          done
+
+      - name: Create release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.read_analysis.outputs.new_version }}"
+          CURRENT_TAG="${{ needs.analyze.outputs.current_tag || 'v0.0.0' }}"
+          
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+          
+          if [ "$CURRENT_TAG" != "v0.0.0" ]; then
+            git log $CURRENT_TAG..HEAD --pretty=format:"- %s" >> release_notes.md
+          else
+            git log --pretty=format:"- %s" -20 >> release_notes.md
+          fi
+          
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${CURRENT_TAG}...${VERSION}" >> release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.read_analysis.outputs.new_version }}
+          name: Release ${{ steps.read_analysis.outputs.new_version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: release/
+
+  notify:
+    needs: [analyze, release]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Notify on success
+        if: needs.release.result == 'success'
+        run: |
+          echo "✅ Release completed successfully!"
+          echo "Version: ${{ needs.analyze.outputs.new_version }}"
+
+      - name: Notify on failure
+        if: needs.release.result == 'failure'
+        run: |
+          echo "❌ Release failed!"
+          echo "Check the logs for details."
