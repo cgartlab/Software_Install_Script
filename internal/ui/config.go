@@ -528,33 +528,8 @@ func RunConfigManager() {
 
 // RunWizard 运行向导
 func RunWizard() {
-	// 简化的向导实现
-	fmt.Println(GetLogo())
-	fmt.Println()
-	fmt.Println(TitleStyle.Render(i18n.T("wizard_welcome")))
-	fmt.Println()
-	fmt.Println(i18n.T("wizard_desc"))
-	fmt.Println()
-
-	// 选择语言
-	fmt.Println(InfoStyle.Render("Select language / 选择语言:"))
-	fmt.Println("  1. English")
-	fmt.Println("  2. 中文")
-	fmt.Print("\nEnter choice (1-2): ")
-
-	var choice string
-	if _, err := fmt.Scanln(&choice); err != nil {
-		log.Printf("Warning: failed to read language choice: %v", err)
-		// 默认使用中文
-		i18n.SetLanguage("zh")
-	} else if choice == "1" {
-		i18n.SetLanguage("en")
-	} else {
-		i18n.SetLanguage("zh")
-	}
-
-	fmt.Println()
-	fmt.Println(SuccessStyle.Render("✓ " + i18n.T("wizard_finish")))
+	// 使用新的向导界面
+	RunNewWizard()
 }
 
 // RunBatch 运行批量安装
