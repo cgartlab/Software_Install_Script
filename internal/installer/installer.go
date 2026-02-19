@@ -209,12 +209,13 @@ func parseWingetSearch(output string) []PackageInfo {
 	lines := strings.Split(output, "\n")
 
 	// 找到标题行和分隔行
-	// 支持中文和英文表头
+	// 支持中文和英文表头（包括乱码情况）
 	dataStart := -1
 	for i, line := range lines {
-		// 检查是否包含表头（中文或英文）
+		// 检查是否包含表头（中文、英文或乱码）
 		if (strings.Contains(line, "Name") && strings.Contains(line, "Id")) ||
-			(strings.Contains(line, "名称") && strings.Contains(line, "ID")) {
+			(strings.Contains(line, "名称") && strings.Contains(line, "ID")) ||
+			(strings.Contains(line, "鍚嶇О") && strings.Contains(line, "ID")) { // UTF-8 乱码情况
 			// 找到分隔行（通常是 --- 或类似）
 			if i+1 < len(lines) && strings.Contains(lines[i+1], "-") {
 				dataStart = i + 2 // 跳过标题行和分隔行
