@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"swiftinstall/internal/appinfo"
 	"swiftinstall/internal/config"
+	"swiftinstall/internal/db"
 	"swiftinstall/internal/i18n"
 	"swiftinstall/internal/installer"
 	"swiftinstall/internal/ui"
@@ -29,44 +30,10 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "sis",
 	Short: i18n.T("app_short_desc"),
-	Long:  ui.GetLogo() + "\n\n" + i18n.T("app_long_desc"),
+	Long:  ui.GetCompactLogo() + "\n\n" + i18n.T("app_long_desc"),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(ui.GetCompactLogo())
-		fmt.Println()
-		fmt.Println(ui.SubtitleStyle.Render(fmt.Sprintf("Version: %s | Author: %s", version, appinfo.Author)))
-		fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
-		fmt.Println()
-		runStartupChecks()
-		fmt.Println(ui.InfoStyle.Render("Usage: sis <command> [flags]"))
-		fmt.Println()
-		fmt.Println(ui.HelpStyle.Render("Commands:"))
-		fmt.Println(ui.HelpStyle.Render("  install     Install software packages"))
-		fmt.Println(ui.HelpStyle.Render("  uninstall   Uninstall software packages"))
-		fmt.Println(ui.HelpStyle.Render("  search      Search for software packages"))
-		fmt.Println(ui.HelpStyle.Render("  list        List configured packages"))
-		fmt.Println(ui.HelpStyle.Render("  config      Manage configuration"))
-		fmt.Println(ui.HelpStyle.Render("  edit-list   Edit software list in config file"))
-		fmt.Println(ui.HelpStyle.Render("  status      Show system status"))
-		fmt.Println(ui.HelpStyle.Render("  uninstall-all One-click uninstall configured software"))
-		fmt.Println(ui.HelpStyle.Render("  about       Show author and project information"))
-		fmt.Println(ui.HelpStyle.Render("  help        Show complete help document"))
-		fmt.Println()
-		fmt.Println(ui.HelpStyle.Render("Run 'sis help' or 'sis <command> help' for more information"))
-		fmt.Println()
-
-		fmt.Print(ui.InfoStyle.Render("Launch interactive menu? [Y/n]: "))
-		var response string
-		if _, err := fmt.Scanln(&response); err != nil {
-			log.Printf("Warning: failed to read user input: %v", err)
-			fmt.Println()
-			fmt.Println(ui.InfoStyle.Render("Input reading failed. Launching interactive menu automatically..."))
-			fmt.Println()
-			runInteractiveTUI()
-			return
-		}
-		if response == "" || response == "y" || response == "Y" {
-			runInteractiveTUI()
-		}
+		// 显示命令菜单（不直接询问是否进入交互模式）
+		runCommandMenu()
 	},
 }
 
@@ -219,6 +186,12 @@ func init() {
 	rootCmd.AddCommand(uninstallAllCmd)
 	rootCmd.AddCommand(editListCmd)
 	rootCmd.AddCommand(setupCmd)
+	rootCmd.AddCommand(dbCmd)
+
+	// 注册 db 子命令
+	dbCmd.AddCommand(dbSyncCmd)
+	dbCmd.AddCommand(dbStatusCmd)
+	dbCmd.AddCommand(dbCleanCmd)
 
 	exportCmd.Flags().StringP("format", "f", "json", i18n.T("flag_export_format"))
 	exportCmd.Flags().StringP("output", "o", "", i18n.T("flag_export_output"))
@@ -251,7 +224,7 @@ var versionCmd = &cobra.Command{
 			Foreground(lipgloss.Color(ui.ColorPrimary)).
 			Bold(true)
 
-		fmt.Println(ui.GetLogo())
+		fmt.Println(ui.GetCompactLogo())
 		fmt.Println()
 		fmt.Println(style.Render(fmt.Sprintf("Version: %s", version)))
 		fmt.Println(style.Render(fmt.Sprintf("Commit:  %s", commit)))
@@ -574,7 +547,7 @@ func runExport(format, output string) {
 func runEditSoftwareList() {
 	cfg := config.Get()
 	path := cfg.GetConfigPath()
-	
+
 	// 根据平台选择默认编辑器
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
@@ -584,7 +557,7 @@ func runEditSoftwareList() {
 			editor = "vi"
 		}
 	}
-	
+
 	cmd := exec.Command(editor, path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -607,4 +580,186 @@ func runClean() {
 
 func runStatus() {
 	ui.RunStatus()
+}
+
+// runCommandMenu 运行命令菜单
+func runCommandMenu() {
+	ui.RunCommandMenu()
+}
+
+// db 命令相关
+var dbCmd = &cobra.Command{
+	Use:   "db",
+	Short: "Manage local package database",
+	Long:  "Manage local package database for fast offline search",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		fmt.Println(ui.GetCompactLogo())
+		fmt.Println()
+		fmt.Println(ui.TitleStyle.Render("Database Management"))
+		fmt.Println()
+		fmt.Println(ui.InfoStyle.Render("Subcommands:"))
+		fmt.Println("  sis db sync     Sync database from winget")
+		fmt.Println("  sis db status   Show database status")
+		fmt.Println("  sis db clean    Clear local database")
+		fmt.Println()
+		fmt.Println(ui.HelpStyle.Render("Use 'sis db <command> --help' for more information"))
+	},
+}
+
+var dbSyncCmd = &cobra.Command{
+	Use:   "sync",
+	Short: "Sync package database from winget",
+	Long:  "Download and import all available packages from winget into local database",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		runDBSync()
+	},
+}
+
+var dbStatusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Show database status",
+	Long:  "Display database statistics and sync information",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		runDBStatus()
+	},
+}
+
+var dbCleanCmd = &cobra.Command{
+	Use:   "clean",
+	Short: "Clear local database",
+	Long:  "Remove all package data from local database",
+	Run: func(cmd *cobra.Command, args []string) {
+		if showCommandHelpIfRequested(cmd, args) {
+			return
+		}
+		runDBClean()
+	},
+}
+
+func runDBSync() {
+	fmt.Println(ui.GetCompactLogo())
+	fmt.Println()
+	fmt.Println(ui.TitleStyle.Render("Syncing Package Database..."))
+	fmt.Println()
+
+	database, err := db.GetDB()
+	if err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to initialize database: " + err.Error()))
+		return
+	}
+	defer database.Close()
+
+	syncer := db.NewSyncer(database)
+
+	// 显示进度
+	syncer.SetProgressCallback(func(current, total int, message string) {
+		var percent float64
+		if total > 0 {
+			percent = float64(current) / float64(total) * 100
+		}
+		fmt.Printf("\r\033[K[%5.1f%%] %s", percent, message)
+	})
+
+	if err := syncer.Sync(); err != nil {
+		fmt.Println()
+		fmt.Println(ui.ErrorStyle.Render("Sync failed: " + err.Error()))
+		return
+	}
+
+	fmt.Println()
+	fmt.Println()
+	fmt.Println(ui.SuccessStyle.Render("✓ Database sync completed!"))
+
+	stats, err := database.GetStats()
+	if err == nil {
+		fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("  Total packages: %v", stats["total_packages"])))
+		if lastSync, ok := stats["last_sync"].(string); ok {
+			fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("  Last sync: %s", lastSync)))
+		}
+		if size, ok := stats["db_size_mb"].(float64); ok {
+			fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("  Database size: %.2f MB", size)))
+		}
+	}
+}
+
+func runDBStatus() {
+	fmt.Println(ui.GetCompactLogo())
+	fmt.Println()
+	fmt.Println(ui.TitleStyle.Render("Database Status"))
+	fmt.Println()
+
+	database, err := db.GetDB()
+	if err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to initialize database: " + err.Error()))
+		return
+	}
+	defer database.Close()
+
+	stats, err := database.GetStats()
+	if err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to get stats: " + err.Error()))
+		return
+	}
+
+	fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("Database path: %s", database.GetPath())))
+	fmt.Println()
+
+	if total, ok := stats["total_packages"].(int); ok {
+		fmt.Println(ui.SuccessStyle.Render(fmt.Sprintf("Total packages: %d", total)))
+	}
+
+	if lastSync, ok := stats["last_sync"].(string); ok && lastSync != "" {
+		fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("Last sync: %s", lastSync)))
+	} else {
+		fmt.Println(ui.WarningStyle.Render("Last sync: Never"))
+	}
+
+	if size, ok := stats["db_size_mb"].(float64); ok {
+		fmt.Println(ui.InfoStyle.Render(fmt.Sprintf("Database size: %.2f MB", size)))
+	}
+}
+
+func runDBClean() {
+	fmt.Println(ui.GetCompactLogo())
+	fmt.Println()
+	fmt.Println(ui.WarningStyle.Render("This will remove all package data from the local database."))
+	fmt.Print(ui.InfoStyle.Render("Continue? [y/N]: "))
+
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		response = ""
+	}
+
+	if response != "y" && response != "Y" && response != "yes" {
+		fmt.Println(ui.InfoStyle.Render("Cancelled."))
+		return
+	}
+
+	database, err := db.GetDB()
+	if err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to initialize database: " + err.Error()))
+		return
+	}
+	defer database.Close()
+
+	if err := database.ClearPackages(); err != nil {
+		fmt.Println(ui.ErrorStyle.Render("Failed to clean database: " + err.Error()))
+		return
+	}
+
+	// 清除元数据
+	if err := database.UpdateMetadata("last_sync", ""); err != nil {
+		fmt.Println(ui.WarningStyle.Render("Warning: failed to clear sync metadata"))
+	}
+
+	fmt.Println(ui.SuccessStyle.Render("✓ Database cleaned successfully!"))
 }

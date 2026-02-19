@@ -18,18 +18,19 @@ import (
 
 // InstallModel 安装界面模型
 type InstallModel struct {
-	packages  []config.Software
-	results   []*installer.InstallResult
-	progress  progress.Model
-	table     table.Model
-	status    string
-	quitting  bool
-	done      bool
-	parallel  bool
-	width     int
-	height    int
-	mu        sync.Mutex
-	showAbout bool
+	packages       []config.Software
+	results        []*installer.InstallResult
+	visualProgress *VisualProgress
+	progress       progress.Model
+	table          table.Model
+	status         string
+	quitting       bool
+	done           bool
+	parallel       bool
+	width          int
+	height         int
+	mu             sync.Mutex
+	showAbout      bool
 }
 
 // tickMsg 定时消息
@@ -37,6 +38,12 @@ type tickMsg struct{}
 
 // NewInstallModel 创建安装模型
 func NewInstallModel(packages []config.Software, parallel bool) InstallModel {
+	// 创建视觉进度条
+	visualConfig := DefaultVisualProgressConfig()
+	visualConfig.TotalTasks = len(packages)
+	visualProgress := NewVisualProgress(visualConfig)
+
+	// 创建传统进度条（作为备用）
 	p := progress.New(progress.WithDefaultGradient())
 	p.Width = 50
 
@@ -78,12 +85,13 @@ func NewInstallModel(packages []config.Software, parallel bool) InstallModel {
 	t.SetStyles(s)
 
 	return InstallModel{
-		packages: packages,
-		results:  make([]*installer.InstallResult, len(packages)),
-		progress: p,
-		table:    t,
-		parallel: parallel,
-		status:   i18n.T("install_progress"),
+		packages:       packages,
+		results:        make([]*installer.InstallResult, len(packages)),
+		visualProgress: visualProgress,
+		progress:       p,
+		table:          t,
+		parallel:       parallel,
+		status:         i18n.T("install_progress"),
 	}
 }
 
@@ -91,6 +99,7 @@ func NewInstallModel(packages []config.Software, parallel bool) InstallModel {
 func (m *InstallModel) Init() tea.Cmd {
 	return tea.Batch(
 		tickCmd(),
+		m.visualProgress.Init(),
 		m.runInstall(),
 	)
 }
@@ -148,6 +157,7 @@ func (m *InstallModel) installPackage(index int) {
 			Status: installer.StatusFailed,
 			Error:  fmt.Errorf("unsupported platform"),
 		}
+		m.visualProgress.ReportError()
 		m.mu.Unlock()
 		return
 	}
@@ -177,6 +187,13 @@ func (m *InstallModel) installPackage(index int) {
 	m.mu.Lock()
 	m.results[index] = result
 
+	// 报告完成状态
+	if result.Status == installer.StatusSuccess || result.Status == installer.StatusSkipped {
+		m.visualProgress.ReportComplete()
+	} else {
+		m.visualProgress.ReportError()
+	}
+
 	status := string(result.Status)
 	if result.Status == installer.StatusSuccess {
 		status = SuccessStyle.Render(i18n.T("common_success"))
@@ -204,6 +221,7 @@ func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.table.SetWidth(msg.Width)
+		m.visualProgress.SetWidth(msg.Width)
 		return m, nil
 
 	case tea.KeyMsg:
@@ -233,27 +251,27 @@ func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tickMsg:
-		// 计算进度
-		completed := 0
-		for _, r := range m.results {
-			if r != nil {
-				completed++
-			}
+		// 视觉进度条自动更新，这里只检查是否完成
+		if m.visualProgress.IsComplete() {
+			m.done = true
+			m.status = i18n.T("common_done")
+			return m, nil
 		}
-
-		if completed < len(m.packages) {
-			percent := float64(completed) / float64(len(m.packages))
-			m.progress.SetPercent(percent)
-			return m, tickCmd()
-		}
+		return m, tickCmd()
 
 	case installDoneMsg:
+		// 确保所有任务完成后设置为 100%
 		m.done = true
-		m.progress.SetPercent(1.0)
+		m.visualProgress.ReportComplete() // 确保进度条到 100%
 		m.status = i18n.T("common_done")
 		return m, nil
 
 	case progress.FrameMsg:
+		// 更新视觉进度条
+		if cmd, _ := m.visualProgress.Update(msg); cmd != nil {
+			return m, cmd
+		}
+		// 更新传统进度条
 		progressModel, cmd := m.progress.Update(msg)
 		m.progress = progressModel.(progress.Model)
 		return m, cmd
@@ -283,8 +301,8 @@ func (m *InstallModel) View() string {
 	b.WriteString(TitleStyle.Render(i18n.T("install_title")))
 	b.WriteString("\n\n")
 
-	// 进度条
-	b.WriteString(m.progress.View())
+	// 视觉进度条
+	b.WriteString(m.visualProgress.View())
 	b.WriteString("\n\n")
 
 	// 状态

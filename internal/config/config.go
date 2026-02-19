@@ -65,6 +65,12 @@ func (c *Config) GetConfigPath() string {
 	return c.configFile
 }
 
+// GetConfigDir 获取配置目录路径
+func GetConfigDir() string {
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".si")
+}
+
 // SetConfigFile 设置配置文件路径
 func SetConfigFile(file string) {
 	if instance != nil {

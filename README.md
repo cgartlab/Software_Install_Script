@@ -22,14 +22,16 @@
 
 - 🎨 **精美的 TUI 界面** - 基于 [Bubble Tea](https://github.com/charmbracelet/bubbletea) 的现代化终端交互体验
 - 🚀 **极速安装** - 支持并行安装，大幅提升软件部署效率
-- 🔍 **智能搜索** - 内置软件包搜索，快速找到所需软件
+- 🔍 **智能搜索** - 内置软件包搜索，快速找到所需软件（支持本地数据库加速）
 - ⚙️ **配置管理** - 交互式配置文件管理，轻松增删软件
 - 🧙 **安装向导** - 引导式软件安装体验，新手友好
 - 🌐 **多语言支持** - 支持中文和英文界面
 - 🔄 **启动自动更新检查** - 首次可选择是否启用自动更新检查
 - 🩺 **环境预检** - 安装与搜索前自动检查包管理器与关键依赖
-- 📦 **跨平台** - 支持 Windows (Winget)、macOS (Homebrew) 和 Linux
+- 📦 **跨平台** - 支持 Windows (Winget)、macOS (Homebrew) 和 Linux (apt/dnf/pacman/zypper)
 - 💾 **单二进制文件** - 无需依赖，单文件即可运行
+- 🛡️ **安全可靠** - 包 ID 验证、并发安全、panic 恢复机制
+- 🗄️ **本地数据库** - 支持离线搜索，定期同步更新包数据
 
 ## 📦 安装
 
@@ -55,8 +57,7 @@ curl -fsSL https://cgartlab.com/SwiftInstall/install.sh | bash
 wget -qO- https://cgartlab.com/SwiftInstall/install.sh | bash
 ```
 
-
-### 环境一键准备（新）
+### 环境一键准备
 
 安装 `sis` 后，执行以下单条命令即可自动完成环境检测、依赖准备与验证：
 
@@ -64,10 +65,10 @@ wget -qO- https://cgartlab.com/SwiftInstall/install.sh | bash
 sis setup --auto-install-deps
 ```
 
-可选：
+可选参数：
 
-- `--dry-run`：仅预览操作，不执行系统命令。
-- `--auto-install-deps=false`：只做检测与验证，不自动安装依赖。
+- `--dry-run`：仅预览操作，不执行系统命令
+- `--auto-install-deps=false`：只做检测与验证，不自动安装依赖
 
 ### 手动安装
 
@@ -165,19 +166,25 @@ software:
 | `sis status` | 系统状态 |
 | `sis version` | 版本信息 |
 | `sis wizard` | 安装向导 |
+| `sis batch [file]` | 批量安装（从文件或配置） |
+| `sis export --format json --output out.json` | 导出配置 |
+| `sis update` | 检查更新 |
 | `sis clean` | 清理缓存 |
 | `sis about` | 作者与项目信息 |
 | `sis help` | 完整帮助文档（含参数、快捷键、示例） |
 | `sis setup` | 环境一键准备 |
-
+| `sis db` | 数据库管理 |
+| `sis db sync` | 同步本地包数据库 |
+| `sis db status` | 查看数据库状态 |
+| `sis db clean` | 清空本地数据库 |
 
 ### 帮助文档与快捷键
 
 #### 获取帮助
 
 - 输入 `sis help` 查看完整帮助文档（功能模块、参数、快捷键、示例）
-- 输入 `sis <命令> help` 或 `sis <命令> --help` 查看该命令简要说明
-- 输入 `sis <命令> -h` 查看该命令简要说明
+- 输入 `sis <command> help` 或 `sis <command> --help` 查看该命令简要说明
+- 输入 `sis <command> -h` 查看该命令简要说明
 
 #### 交互式主菜单快捷键
 
@@ -196,9 +203,15 @@ software:
 | 快捷键 | 功能 |
 |--------|------|
 | `a` | 显示关于信息（安装完成后） |
-| `Enter` | 完成安装并退出 |
-| `Esc` | 完成安装并退出 |
+| `Enter` / `Esc` | 完成安装并退出 |
 | `q` | 取消安装并退出 |
+
+#### 卸载界面快捷键
+
+| 快捷键 | 功能 |
+|--------|------|
+| `Enter` / `Esc` | 完成卸载并退出 |
+| `q` | 取消卸载并退出 |
 
 #### 搜索界面快捷键
 
@@ -228,9 +241,66 @@ software:
 ### 环境预检
 
 首次运行安装或搜索命令时，会自动执行环境预检：
-- 检测包管理器（Winget/Homebrew/ apt/dnf/pacman 等）
+- 检测包管理器（Winget/Homebrew/apt/dnf/pacman/zypper 等）
 - 检查必要的系统命令
 - 提供环境修复建议
+
+### 🗄️ 本地数据库搜索
+
+`sis` 支持使用本地数据库进行快速搜索，无需每次联网查询。
+
+**使用本地数据库的好处：**
+- ⚡ **搜索速度更快** - 本地查询，毫秒级响应
+- 📴 **支持离线搜索** - 无需网络连接
+- 🔄 **定期同步更新** - 自动或手动更新包数据
+
+**数据库管理命令：**
+
+```bash
+# 首次同步包数据库（推荐）
+sis db sync
+
+# 查看数据库状态
+sis db status
+
+# 清空本地数据库
+sis db clean
+```
+
+**工作流程：**
+
+1. **首次使用**：运行 `sis db sync` 从 winget 导入所有可用包数据
+2. **日常搜索**：使用 `sis search` 自动优先从本地数据库搜索
+3. **定期更新**：数据库会在 7 天后自动提示更新，或手动运行 `sis db sync`
+
+**示例：**
+
+```bash
+# 同步数据库
+$ sis db sync
+
+Syncing Package Database...
+
+[100.0%] Sync completed!
+
+✓ Database sync completed!
+  Total packages: 150000
+  Last sync: 2026-02-19T10:30:00+08:00
+  Database size: 45.2 MB
+
+# 查看状态
+$ sis db status
+
+Database Status
+
+Database path: /home/user/.si/packages.db
+Total packages: 150000
+Last sync: 2026-02-19T10:30:00+08:00
+Database size: 45.2 MB
+
+# 搜索软件（自动使用本地数据库）
+$ sis search vscode
+```
 
 ### 自动更新检查
 
@@ -253,8 +323,11 @@ auto_update_check: true  # 或 false
   🗑️ 卸载软件
   🔍 搜索软件
   ⚙️ 配置管理
+  🧙 安装向导
   📊 系统状态
   🧹 清理缓存
+  🔄 检查更新
+  ℹ️ 关于作者
   🚪 退出
 
 导航：↑/上 • ↓/下 • Enter 选择 • i 安装 • s 搜索 • c 配置 • a 关于 • q 退出

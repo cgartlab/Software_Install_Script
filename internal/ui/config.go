@@ -529,7 +529,7 @@ func RunConfigManager() {
 // RunWizard 运行向导
 func RunWizard() {
 	// 简化的向导实现
-	fmt.Println(GetLogo())
+	fmt.Println(GetCompactLogo())
 	fmt.Println()
 	fmt.Println(TitleStyle.Render(i18n.T("wizard_welcome")))
 	fmt.Println()
@@ -628,34 +628,94 @@ func RunClean() {
 
 // RunStatus 运行状态检查
 func RunStatus() {
-	fmt.Println(TitleStyle.Render(i18n.T("cmd_status_short")))
-	fmt.Println()
-
-	// 平台信息
-	pm, available := installer.CheckPackageManager()
-
-	fmt.Println(InfoStyle.Render(i18n.T("status_platform") + ":"))
-	fmt.Printf("  OS: %s\n", getOSName())
-	fmt.Printf("  Arch: %s\n", getArch())
-	fmt.Println()
-
-	fmt.Println(InfoStyle.Render(i18n.T("status_package_mgr") + ":"))
-	if available {
-		fmt.Printf("  %s: %s\n", pm, SuccessStyle.Render("Available"))
-	} else {
-		fmt.Printf("  %s: %s\n", pm, ErrorStyle.Render("Not available"))
+	// 在 TUI 环境中使用独立的 TUI 程序显示状态
+	p := tea.NewProgram(NewStatusModel(), tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Error: %v\n", err)
 	}
-	fmt.Println()
+}
 
-	// 已安装软件
+// StatusModel 状态模型
+type StatusModel struct {
+	osName       string
+	arch         string
+	packageMgr   string
+	pkgAvailable bool
+	installedCnt int
+	width        int
+	height       int
+	quitting     bool
+}
+
+// NewStatusModel 创建状态模型
+func NewStatusModel() StatusModel {
+	m := StatusModel{
+		osName:       runtime.GOOS,
+		arch:         runtime.GOARCH,
+		packageMgr:   "winget",
+		pkgAvailable: true,
+	}
+
+	// 获取已安装软件数量
 	inst := installer.NewInstaller()
 	if inst != nil {
-		fmt.Println(InfoStyle.Render(i18n.T("status_installed") + ":"))
 		installed, err := inst.GetInstalled()
 		if err == nil {
-			fmt.Printf("  Total: %d packages\n", len(installed))
+			m.installedCnt = len(installed)
 		}
 	}
+
+	return m
+}
+
+// Init 初始化
+func (m StatusModel) Init() tea.Cmd {
+	return nil
+}
+
+// Update 更新
+func (m StatusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		return m, nil
+
+	case tea.KeyMsg:
+		m.quitting = true
+		return m, tea.Quit
+	}
+	return m, nil
+}
+
+// View 视图
+func (m StatusModel) View() string {
+	var b strings.Builder
+
+	b.WriteString(GetCompactLogo())
+	b.WriteString("\n\n")
+	b.WriteString(TitleStyle.Render("系统状态"))
+	b.WriteString("\n\n")
+
+	b.WriteString(InfoStyle.Render("平台信息:\n"))
+	b.WriteString(fmt.Sprintf("  OS: %s\n", m.osName))
+	b.WriteString(fmt.Sprintf("  Arch: %s\n", m.arch))
+	b.WriteString("\n")
+
+	b.WriteString(InfoStyle.Render("包管理器:\n"))
+	if m.pkgAvailable {
+		b.WriteString(fmt.Sprintf("  %s: %s\n", m.packageMgr, SuccessStyle.Render("可用\n")))
+	} else {
+		b.WriteString(fmt.Sprintf("  %s: %s\n", m.packageMgr, ErrorStyle.Render("不可用\n")))
+	}
+
+	b.WriteString(InfoStyle.Render("已安装软件:\n"))
+	b.WriteString(fmt.Sprintf("  总计：%d 个软件\n", m.installedCnt))
+	b.WriteString("\n")
+
+	b.WriteString(HelpStyle.Render("按任意键返回主菜单..."))
+
+	return b.String()
 }
 
 // getOSName 获取操作系统名称

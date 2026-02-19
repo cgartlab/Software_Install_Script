@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+
+	"swiftinstall/internal/db"
 )
 
 var (
@@ -165,8 +167,15 @@ func (w *WindowsInstaller) Uninstall(packageID string) (*InstallResult, error) {
 	return result, nil
 }
 
-// Search 搜索软件
+// Search 搜索软件（优先使用本地数据库）
 func (w *WindowsInstaller) Search(query string) ([]PackageInfo, error) {
+	// 首先尝试从本地数据库搜索
+	packages, err := searchFromDatabase(query)
+	if err == nil && len(packages) > 0 {
+		return packages, nil
+	}
+
+	// 数据库搜索失败或无结果时，回退到 winget 实时搜索
 	cmd := exec.Command("winget", "search", query)
 	output, err := cmd.Output()
 	if err != nil {
@@ -174,6 +183,31 @@ func (w *WindowsInstaller) Search(query string) ([]PackageInfo, error) {
 	}
 
 	return parseWingetSearch(string(output)), nil
+}
+
+// searchFromDatabase 从本地数据库搜索
+func searchFromDatabase(query string) ([]PackageInfo, error) {
+	database, err := db.GetDB()
+	if err != nil {
+		return nil, err
+	}
+
+	pkgs, err := database.Search(query, 50)
+	if err != nil {
+		return nil, err
+	}
+
+	var packages []PackageInfo
+	for _, pkg := range pkgs {
+		packages = append(packages, PackageInfo{
+			Name:      pkg.Name,
+			ID:        pkg.ID,
+			Version:   pkg.Version,
+			Publisher: pkg.Publisher,
+		})
+	}
+
+	return packages, nil
 }
 
 // IsInstalled 检查是否已安装

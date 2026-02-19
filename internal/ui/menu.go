@@ -193,11 +193,10 @@ func (m MainMenuModel) View() string {
 	meta := SubtitleStyle.Render(fmt.Sprintf("%s: %s", i18n.T("about_author"), appinfo.Author))
 	copy := HelpStyle.Render(appinfo.Copyright)
 
+	// 移除重复的标题，只保留 logo
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		logo,
-		"",
-		TitleStyle.Render(i18n.T("menu_title")),
 		"",
 		menu,
 		"",

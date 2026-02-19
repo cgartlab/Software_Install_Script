@@ -57,7 +57,7 @@ func (m AboutModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m AboutModel) View() string {
 	var b strings.Builder
 
-	b.WriteString(GetLogo())
+	b.WriteString(GetCompactLogo())
 	b.WriteString("\n\n")
 	b.WriteString(GetAboutText())
 	b.WriteString("\n\n")
@@ -78,7 +78,7 @@ func RunAbout() {
 
 // ShowAboutSimple 简单显示关于信息（用于命令行模式）
 func ShowAboutSimple() {
-	fmt.Println(GetLogo())
+	fmt.Println(GetCompactLogo())
 	fmt.Println()
 	fmt.Println(GetAboutText())
 	fmt.Println()
