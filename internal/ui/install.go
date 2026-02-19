@@ -388,9 +388,10 @@ func RunUninstall(packages []config.Software) {
 	var response string
 	if _, err := fmt.Scanln(&response); err != nil {
 		fmt.Println()
+		fmt.Println(InfoStyle.Render("已取消卸载"))
 		return
 	}
-	
+
 	if response != "y" && response != "Y" && response != "yes" {
 		fmt.Println(InfoStyle.Render("已取消卸载"))
 		return

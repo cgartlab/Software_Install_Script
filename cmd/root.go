@@ -103,7 +103,7 @@ func printComprehensiveHelp() {
 	fmt.Println("  sis install [package...]          Install from config or explicit package IDs")
 	fmt.Println("  sis uninstall [package...]        Uninstall packages from config or explicit IDs")
 	fmt.Println("  sis uninstall-all                 One-click uninstall all configured software")
-	fmt.Println("  sis search <query>                Search packages")
+	fmt.Println("  sis search [query]                Search packages")
 	fmt.Println("  sis list                          Show configured software")
 	fmt.Println("  sis config                        Open configuration manager")
 	fmt.Println("  sis edit-list                     Edit software list directly in config file")
