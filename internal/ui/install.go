@@ -329,7 +329,7 @@ func (m *InstallModel) View() string {
 		b.WriteString(HelpStyle.Render("Exit: Enter/Esc | About: a | Quit: q"))
 	} else {
 		b.WriteString("\n")
-		b.WriteString(HelpStyle.Render("About: a | Quit: q"))
+		b.WriteString(HelpStyle.Render("Installing... | Quit: q"))
 	}
 
 	return b.String()
@@ -364,16 +364,48 @@ func RunInstallByName(packageNames []string, parallel bool) {
 
 // RunUninstall 运行卸载界面
 func RunUninstall(packages []config.Software) {
-	// 简化版本，直接卸载
+	if len(packages) == 0 {
+		fmt.Println(WarningStyle.Render(i18n.T("warn_no_packages")))
+		return
+	}
+
+	// 显示确认提示
+	fmt.Println(TitleStyle.Render(i18n.T("menu_uninstall")))
+	fmt.Println()
+	fmt.Println(WarningStyle.Render(fmt.Sprintf("即将卸载 %d 个软件，请确认：", len(packages))))
+	fmt.Println()
+	
+	for _, pkg := range packages {
+		packageID := pkg.ID
+		if packageID == "" {
+			packageID = pkg.Package
+		}
+		fmt.Printf("  - %s (%s)\n", pkg.Name, packageID)
+	}
+	fmt.Println()
+	fmt.Print(HighlightStyle.Render("确认卸载？[y/N]: "))
+	
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		fmt.Println()
+		return
+	}
+	
+	if response != "y" && response != "Y" && response != "yes" {
+		fmt.Println(InfoStyle.Render("已取消卸载"))
+		return
+	}
+	
+	fmt.Println()
+	
+	// 执行卸载
 	inst := installer.NewInstaller()
 	if inst == nil {
 		fmt.Println(ErrorStyle.Render("Unsupported platform"))
 		return
 	}
 
-	fmt.Println(TitleStyle.Render(i18n.T("menu_uninstall")))
-	fmt.Println()
-
+	success, failed, skipped := 0, 0, 0
 	for _, pkg := range packages {
 		packageID := pkg.ID
 		if packageID == "" {
@@ -384,12 +416,18 @@ func RunUninstall(packages []config.Software) {
 		result, err := inst.Uninstall(packageID)
 		if err != nil || result.Status == installer.StatusFailed {
 			fmt.Println(ErrorStyle.Render("✗ Failed"))
+			failed++
 		} else if result.Status == installer.StatusSkipped {
 			fmt.Println(WarningStyle.Render("⊘ Not installed"))
+			skipped++
 		} else {
 			fmt.Println(SuccessStyle.Render("✓ Success"))
+			success++
 		}
 	}
+	
+	fmt.Println()
+	fmt.Println(SuccessStyle.Render(fmt.Sprintf("完成：成功 %d, 跳过 %d, 失败 %d", success, skipped, failed)))
 }
 
 // RunUninstallByName 按名称卸载

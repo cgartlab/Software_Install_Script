@@ -574,10 +574,17 @@ func runExport(format, output string) {
 func runEditSoftwareList() {
 	cfg := config.Get()
 	path := cfg.GetConfigPath()
+	
+	// 根据平台选择默认编辑器
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
-		editor = "vi"
+		if runtime.GOOS == "windows" {
+			editor = "notepad"
+		} else {
+			editor = "vi"
+		}
 	}
+	
 	cmd := exec.Command(editor, path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
