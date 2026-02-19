@@ -2,6 +2,40 @@
 
 All notable changes to SwiftInstall will be documented in this file.
 
+## [0.1.6] - 2026-02-19
+
+### Added
+- 新增自动更新检查功能，启动时可选择是否启用
+- 新增环境预检功能，安装/搜索前自动检测包管理器状态
+- 新增 Linux 平台支持（见 `internal/installer/linux.go`）
+- 新增 `sis setup` 命令，一键自动完成环境检测、依赖准备与验证
+
+### Changed
+- 优化 setup 流程，支持 `--auto-install-deps` 和 `--dry-run` 参数
+- 增强 release 日志记录模块
+- 改进软件接口特性和用户体验
+
+### Fixed
+- 修复配置保存错误处理
+- 修复安装模型指针接收器问题
+- 修复并发安装中的 panic 恢复和错误处理问题
+
+## [0.1.5] - 2026-02-18
+
+### Changed
+- 合并多个特性分支，统一代码结构
+- 优化软件接口特性
+
+## [0.1.4] - 2026-02-18
+
+### Added
+- 增强菜单导航系统
+- 改进 help 系统，支持更完整的帮助文档
+- 增强关于信息展示
+
+### Changed
+- 更新项目文档和许可证信息
+
 ## [0.1.3] - 2026-02-18
 
 ### Fixed
@@ -10,7 +44,7 @@ All notable changes to SwiftInstall will be documented in this file.
 - 修复 `config.save()` 方法，保存所有配置项（language, theme, parallel_install 等）
 - 修复 `getOSName()` 和 `getArch()` 使用 `runtime.GOOS` 和 `runtime.GOARCH` 动态获取系统信息
 - 修复 Makefile 中 ldflags 包路径错误
-- 添加 `validatePackageID()` 函数验证包ID格式，防止潜在命令注入
+- 添加 `validatePackageID()` 函数验证包 ID 格式，防止潜在命令注入
 - 改进 `parseWingetLine()` 函数，使用正则表达式更好地解析含空格的软件名
 - 修复 `IsInstalled()` 方法错误返回值，正确返回错误信息
 - 修复 `Install()` 方法中 `IsInstalled` 错误被忽略的问题
@@ -22,8 +56,8 @@ All notable changes to SwiftInstall will be documented in this file.
 
 ### Added
 - 添加 `internal/installer/installer_test.go` 测试文件
-  - TestValidatePackageID: 包ID验证测试
-  - TestParseWingetLine: winget输出解析测试
+  - TestValidatePackageID: 包 ID 验证测试
+  - TestParseWingetLine: winget 输出解析测试
   - TestCheckPackageManager: 包管理器检测测试
 - 添加 `internal/config/config_test.go` 测试文件
   - TestConfigInit: 配置初始化测试
