@@ -71,7 +71,16 @@ var rootCmd = &cobra.Command{
 }
 
 func hasHelpArg(args []string) bool {
-	return len(args) == 1 && strings.EqualFold(args[0], "help")
+	if len(args) == 0 {
+		return false
+	}
+	// 检查是否有 help 作为第一个或最后一个参数
+	for _, arg := range args {
+		if strings.EqualFold(arg, "help") || strings.EqualFold(arg, "--help") || strings.EqualFold(arg, "-h") {
+			return true
+		}
+	}
+	return false
 }
 
 func showCommandHelpIfRequested(cmd *cobra.Command, args []string) bool {
@@ -285,20 +294,19 @@ var uninstallCmd = &cobra.Command{
 }
 
 var searchCmd = &cobra.Command{
-	Use:   "search <query>",
+	Use:   "search [query]",
 	Short: i18n.T("cmd_search_short"),
 	Long:  i18n.T("cmd_search_long"),
-	Args: func(cmd *cobra.Command, args []string) error {
-		if hasHelpArg(args) {
-			return nil
-		}
-		return cobra.ExactArgs(1)(cmd, args)
-	},
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if showCommandHelpIfRequested(cmd, args) {
 			return
 		}
-		runSearch(args[0])
+		if len(args) > 0 {
+			runSearch(args[0])
+		} else {
+			runSearch("")
+		}
 	},
 }
 

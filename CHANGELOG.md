@@ -2,6 +2,28 @@
 
 All notable changes to SwiftInstall will be documented in this file.
 
+## [0.1.7] - 2026-02-19
+
+### Fixed
+- 修复 `install` 和 `search` 命令的 `help` 参数处理，现在正确显示帮助文档
+- 修复 `search` 命令无参数时的行为，现在启动交互式搜索界面
+- 修复搜索界面表格列标题不一致问题（Category → Publisher）
+- 修复主菜单快捷键执行后状态混乱的问题
+- 修复安装界面完成后只能按 Enter 退出的问题
+- 修复 About 页面无交互的问题
+
+### Added
+- 搜索界面添加清晰的快捷键提示
+- 安装界面改进帮助文本显示
+- About 页面改为 TUI 交互模式，支持任意键返回
+- 主菜单快捷键执行后正确退出并返回终端
+
+### Changed
+- 改进 `hasHelpArg()` 函数，支持在参数任意位置检测 help
+- 优化搜索界面帮助文本，显示 "Add: Enter | Refine: / | Back: Esc | Quit: q"
+- 优化安装界面完成后的退出提示 "Exit: Enter/Esc | About: a | Quit: q"
+- 更新 README.md，添加完整的快捷键说明表格
+
 ## [0.1.6] - 2026-02-19
 
 ### Added

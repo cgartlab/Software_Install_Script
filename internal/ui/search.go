@@ -41,7 +41,7 @@ func NewSearchModel(initialQuery string) SearchModel {
 	columns := []table.Column{
 		{Title: i18n.T("config_name"), Width: 25},
 		{Title: i18n.T("config_id"), Width: 30},
-		{Title: i18n.T("config_category"), Width: 15},
+		{Title: "Publisher", Width: 15},
 	}
 
 	t := table.New(
@@ -218,10 +218,13 @@ func (m SearchModel) View() string {
 		b.WriteString("\n")
 		b.WriteString(m.table.View())
 		b.WriteString("\n")
-		b.WriteString(HelpStyle.Render(i18n.T("search_add") + " Enter | " + i18n.T("search_refine") + " / | " + i18n.T("common_back") + " Esc | " + i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render("Add: Enter | Refine: / | Back: Esc | Quit: q"))
 	} else if m.query != "" && !m.searching {
 		b.WriteString(WarningStyle.Render(i18n.T("search_no_results")))
 		b.WriteString("\n")
+		b.WriteString(HelpStyle.Render("Refine: / | Quit: q"))
+	} else {
+		b.WriteString(HelpStyle.Render("Enter to search | Quit: q"))
 	}
 
 	if m.message != "" {

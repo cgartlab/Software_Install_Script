@@ -42,3 +42,23 @@ Thumbs.db
 .coverage
 htmlcov/
 node_modules
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+release/
+
+# SwiftInstall
+.si/
+*.log
+logs/
+
+# Release Tool
+release.exe
+release-tool.exe

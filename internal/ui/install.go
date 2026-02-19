@@ -212,15 +212,22 @@ func (m *InstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case "a":
-			m.showAbout = !m.showAbout
+			if m.done {
+				m.showAbout = !m.showAbout
+			}
 			return m, nil
 		case "esc":
 			if m.showAbout {
 				m.showAbout = false
 				return m, nil
 			}
+			if m.done {
+				m.quitting = true
+				return m, tea.Quit
+			}
 		case "enter":
 			if m.done {
+				m.quitting = true
 				return m, tea.Quit
 			}
 		}
@@ -319,10 +326,10 @@ func (m *InstallModel) View() string {
 			b.WriteString(WarningStyle.Render(fmt.Sprintf("⊘ %s: %d", i18n.T("install_skipped"), skipped)))
 		}
 		b.WriteString("\n\n")
-		b.WriteString(HelpStyle.Render(i18n.T("common_confirm") + " Enter | a " + i18n.T("menu_about") + " | " + i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render("Exit: Enter/Esc | About: a | Quit: q"))
 	} else {
 		b.WriteString("\n")
-		b.WriteString(HelpStyle.Render("a " + i18n.T("menu_about") + " | " + i18n.T("common_cancel") + " q"))
+		b.WriteString(HelpStyle.Render("About: a | Quit: q"))
 	}
 
 	return b.String()

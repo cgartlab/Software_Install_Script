@@ -42,8 +42,8 @@ The `make release` target generates the following artifacts in the `release/` di
 
 1. **Clone the repository** (if not already done):
    ```bash
-   git clone https://github.com/cgartlab/Software_Install_Script.git
-   cd Software_Install_Script
+   git clone https://github.com/cgartlab/SwiftInstall.git
+   cd SwiftInstall
    ```
 
 2. **Ensure dependencies are up-to-date**:
@@ -58,20 +58,39 @@ The `make release` target generates the following artifacts in the `release/` di
    git checkout -b release/vX.Y.Z
    ```
 
-2. **Update version information** (if needed):
-   - The version is automatically derived from Git tags using `git describe --tags`
-   - For a new release, create and push a tag:
-     ```bash
-     git tag vX.Y.Z
-     git push origin vX.Y.Z
-     ```
+2. **Update CHANGELOG.md** with the new version changes:
+   ```markdown
+   ## [X.Y.Z] - YYYY-MM-DD
 
-3. **Build and package the release**:
+   ### Added
+   - New features...
+
+   ### Changed
+   - Changes...
+
+   ### Fixed
+   - Bug fixes...
+   ```
+
+3. **Commit CHANGELOG changes**:
+   ```bash
+   git add CHANGELOG.md
+   git commit -m "docs: update CHANGELOG for vX.Y.Z"
+   ```
+
+4. **Create and push Git tag**:
+   - The version is automatically derived from Git tags using `git describe --tags`
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+5. **Build and package the release**:
    ```bash
    make release
    ```
 
-4. **Verify the artifacts**:
+6. **Verify the artifacts**:
    ```bash
    ls -la release/
    ```
@@ -81,7 +100,7 @@ The `make release` target generates the following artifacts in the `release/` di
 
 1. **Create a new GitHub Release** using the GitHub CLI:
    ```bash
-   gh release create vX.Y.Z --title "Release vX.Y.Z" --notes "Release notes here"
+   gh release create vX.Y.Z --title "Release vX.Y.Z" --notes "See CHANGELOG.md for details"
    ```
 
 2. **Upload the artifacts**:
@@ -113,6 +132,18 @@ The Makefile supports cross-compilation for all major platforms:
 - Linux: `GOOS=linux GOARCH={amd64,arm64}`
 - macOS: `GOOS=darwin GOARCH={amd64,arm64}`
 
+### 4.3 Version Management
+
+**Version Tagging Convention:**
+- Format: `vMAJOR.MINOR.PATCH` (e.g., `v0.1.7`)
+- Use annotated tags: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+- Tags should be pushed after committing related changes
+
+**CHANGELOG Management:**
+- Update `CHANGELOG.md` before creating a release tag
+- Follow the format: `## [X.Y.Z] - YYYY-MM-DD`
+- Categorize changes: Added, Changed, Fixed, Removed, Deprecated
+
 ## 5. Potential Challenges
 
 ### 5.1 Cross-Compilation Issues
@@ -131,6 +162,7 @@ The Makefile supports cross-compilation for all major platforms:
 
 - **Tag synchronization**: Ensuring Git tags are properly created and pushed before building
 - **Version embedding**: Verifying that the correct version information is embedded in the binaries
+- **CHANGELOG updates**: Remembering to update CHANGELOG before each release
 
 ## 6. Security Considerations
 
@@ -160,6 +192,7 @@ The Makefile supports cross-compilation for all major platforms:
 - [ ] All expected release artifacts are generated
 - [ ] Artifacts have appropriate file sizes
 - [ ] Version information is correctly embedded in binaries
+- [ ] CHANGELOG.md is updated with the new version
 
 ### 7.2 Upload Success Criteria
 
@@ -172,7 +205,7 @@ The Makefile supports cross-compilation for all major platforms:
 
 - [ ] Binaries run correctly on their respective platforms
 - [ ] Basic functionality tests pass
-- [ ] Version information is displayed correctly
+- [ ] Version information is displayed correctly (`sis version`)
 - [ ] No regressions from previous releases
 
 ## 8. Alternative Approaches
@@ -195,21 +228,53 @@ For more automation, create a script that combines the build and upload steps:
 # Set version
 VERSION="vX.Y.Z"
 
+# Update CHANGELOG (manual step)
+echo "Please update CHANGELOG.md before continuing..."
+read -p "Press enter to continue..."
+
+# Commit CHANGELOG
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG for $VERSION"
+
 # Create tag
-git tag $VERSION
+git tag -a $VERSION -m "Release $VERSION"
 git push origin $VERSION
 
 # Build and package
 make release
 
 # Create release and upload
-gh release create $VERSION --title "Release $VERSION" --notes "Automated release"
+gh release create $VERSION --title "Release $VERSION" --notes "See CHANGELOG.md for details"
 gh release upload $VERSION release/*
 
 echo "Release $VERSION created and uploaded successfully!"
 ```
 
-## 9. Conclusion
+## 9. Release Checklist
+
+### Pre-Release
+- [ ] All features for this version are complete
+- [ ] All tests pass (`go test ./...`)
+- [ ] Code is formatted (`go fmt ./...`)
+- [ ] CHANGELOG.md is updated
+- [ ] README.md is updated (if needed)
+
+### Build & Release
+- [ ] CHANGELOG changes are committed
+- [ ] Git tag is created and pushed
+- [ ] Build completes successfully
+- [ ] All artifacts are generated
+- [ ] Artifacts are tested on target platforms
+- [ ] Release is created on GitHub
+- [ ] All artifacts are uploaded
+
+### Post-Release
+- [ ] Release page shows all artifacts correctly
+- [ ] Download links work
+- [ ] Installation scripts work with new version
+- [ ] Version command shows correct version
+
+## 10. Conclusion
 
 The local packaging and direct upload process provides a reliable alternative to the automated CI/CD pipeline. By following the steps outlined in this specification, you can create and publish releases consistently, even when the automated process fails.
 
@@ -221,3 +286,16 @@ This approach offers several advantages:
 - **Speed**: Can be faster than waiting for CI/CD jobs to complete
 
 With proper implementation and validation, this workflow can become the primary method for creating releases, ensuring consistent delivery of high-quality software to users.
+
+## Quick Reference
+
+```bash
+# Quick release commands
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG for vX.Y.Z"
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
+make release
+gh release create vX.Y.Z --title "Release vX.Y.Z" --notes "See CHANGELOG.md"
+gh release upload vX.Y.Z release/*
+```

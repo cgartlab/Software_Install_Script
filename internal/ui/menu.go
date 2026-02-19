@@ -136,15 +136,26 @@ func (m MainMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if item, ok := m.list.SelectedItem().(MenuItem); ok {
 				item.Action()
+				// 动作执行后退出菜单
+				m.quitting = true
+				return m, tea.Quit
 			}
 		case "i":
 			RunInstall(config.Get().GetSoftwareList(), false)
+			m.quitting = true
+			return m, tea.Quit
 		case "s":
 			RunSearch("")
+			m.quitting = true
+			return m, tea.Quit
 		case "c":
 			RunConfigManager()
+			m.quitting = true
+			return m, tea.Quit
 		case "a":
 			RunAbout()
+			// About 页面显示后返回菜单
+			return m, nil
 		}
 	}
 
