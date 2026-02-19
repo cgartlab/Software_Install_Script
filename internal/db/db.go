@@ -194,9 +194,7 @@ func (d *Database) SavePackages(packages []Package) error {
 		return err
 	}
 	defer func() {
-		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-			// 忽略 Rollback 错误（可能是事务已提交）
-		}
+		_ = tx.Rollback() // 忽略 Rollback 错误（可能是事务已提交）
 	}()
 
 	stmt, err := tx.Prepare(`

@@ -32,12 +32,9 @@ type VersionRule struct {
 }
 
 type VersionEngine struct {
-	rules          []VersionRule
-	customPatterns []*regexp.Regexp // 保留供未来使用
+	rules []VersionRule
+	// customPatterns 字段已移除
 }
-
-// 使用空白标识符避免 unused 警告
-var _ = func() []*regexp.Regexp { return nil }
 
 func NewVersionEngine() *VersionEngine {
 	engine := &VersionEngine{
