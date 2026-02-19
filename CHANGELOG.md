@@ -2,7 +2,7 @@
 
 All notable changes to SwiftInstall will be documented in this file.
 
-## [0.1.7] - 2026-02-19
+## [v0.1.7] - 2026-02-19
 
 ### Fixed
 - 修复 `install` 和 `search` 命令的 `help` 参数处理，现在正确显示帮助文档
@@ -24,7 +24,7 @@ All notable changes to SwiftInstall will be documented in this file.
 - 优化安装界面完成后的退出提示 "Exit: Enter/Esc | About: a | Quit: q"
 - 更新 README.md，添加完整的快捷键说明表格
 
-## [0.1.6] - 2026-02-19
+## [v0.1.6] - 2026-02-19
 
 ### Added
 - 新增自动更新检查功能，启动时可选择是否启用
@@ -42,13 +42,13 @@ All notable changes to SwiftInstall will be documented in this file.
 - 修复安装模型指针接收器问题
 - 修复并发安装中的 panic 恢复和错误处理问题
 
-## [0.1.5] - 2026-02-18
+## [v0.1.5] - 2026-02-18
 
 ### Changed
 - 合并多个特性分支，统一代码结构
 - 优化软件接口特性
 
-## [0.1.4] - 2026-02-18
+## [v0.1.4] - 2026-02-18
 
 ### Added
 - 增强菜单导航系统
@@ -58,7 +58,7 @@ All notable changes to SwiftInstall will be documented in this file.
 ### Changed
 - 更新项目文档和许可证信息
 
-## [0.1.3] - 2026-02-18
+## [v0.1.3] - 2026-02-18
 
 ### Fixed
 - 修复 `InstallModel` 并发安全问题，添加 `sync.Mutex` 保护共享数据

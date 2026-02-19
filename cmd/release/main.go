@@ -133,8 +133,8 @@ func performDryRun(pipeline *release.ReleasePipeline, currentVersion string, com
 	}
 
 	fmt.Println("=== DRY RUN MODE ===")
-	fmt.Printf("Current Version: %s\n", currentVersion)
-	fmt.Printf("New Version: %s\n", decision.NewVersion.String())
+	fmt.Printf("Current Version: %s\n", currentVer.WithPrefix())
+	fmt.Printf("New Version: %s\n", decision.NewVersion.WithPrefix())
 	fmt.Printf("Change Type: %s\n", decision.ChangeType.String())
 	fmt.Printf("Reason: %s\n", decision.Reason)
 	fmt.Printf("Confidence: %.2f%%\n", decision.Confidence*100)

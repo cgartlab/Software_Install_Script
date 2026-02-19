@@ -40,27 +40,32 @@ jobs:
       - name: Analyze changes
         id: analyze
         run: |
+          # 获取当前标签（兼容有 v 和无 v 前缀的情况）
           CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
-          
+
           COMMITS=$(git log $CURRENT_TAG..HEAD --oneline 2>/dev/null | wc -l)
-          
+
           if [ "$COMMITS" -eq 0 ]; then
             echo "should_release=false" >> $GITHUB_OUTPUT
             echo "No new commits since last release"
             exit 0
           fi
-          
+
           ./release-tool -project swiftinstall -tag $CURRENT_TAG -dry-run -output json > analysis.json
-          
+
           VERSION_TYPE=$(cat analysis.json | jq -r '.changeType')
+          # 确保新版本号带 v 前缀
           NEW_VERSION=$(cat analysis.json | jq -r '.newVersion')
+          if [[ ! "$NEW_VERSION" =~ ^v ]]; then
+            NEW_VERSION="v${NEW_VERSION}"
+          fi
           CONFIDENCE=$(cat analysis.json | jq -r '.confidence')
-          
+
           echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "confidence=$CONFIDENCE" >> $GITHUB_OUTPUT
-          
+
           if [ "$VERSION_TYPE" != "none" ]; then
             echo "should_release=true" >> $GITHUB_OUTPUT
           else
@@ -98,6 +103,10 @@ jobs:
         id: read_analysis
         run: |
           NEW_VERSION=$(cat analysis.json | jq -r '.newVersion')
+          # 确保带 v 前缀
+          if [[ ! "$NEW_VERSION" =~ ^v ]]; then
+            NEW_VERSION="v${NEW_VERSION}"
+          fi
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build release tool
@@ -140,16 +149,20 @@ jobs:
         run: |
           VERSION="${{ steps.read_analysis.outputs.new_version }}"
           CURRENT_TAG="${{ needs.analyze.outputs.current_tag || 'v0.0.0' }}"
-          
+          # 确保 CURRENT_TAG 带 v 前缀
+          if [[ ! "$CURRENT_TAG" =~ ^v ]]; then
+            CURRENT_TAG="v${CURRENT_TAG}"
+          fi
+
           echo "## What's Changed" > release_notes.md
           echo "" >> release_notes.md
-          
+
           if [ "$CURRENT_TAG" != "v0.0.0" ]; then
             git log $CURRENT_TAG..HEAD --pretty=format:"- %s" >> release_notes.md
           else
             git log --pretty=format:"- %s" -20 >> release_notes.md
           fi
-          
+
           echo "" >> release_notes.md
           echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${CURRENT_TAG}...${VERSION}" >> release_notes.md
 

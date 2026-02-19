@@ -112,19 +112,19 @@ func (p *ReleasePipeline) Execute(ctx context.Context, commits []string, fileCha
 	result.AnalysisResult = analysisResult
 
 	versionDecision := p.decideVersion(currentVersion, analysisResult)
-	result.NewVersion = versionDecision.NewVersion.String()
+	result.NewVersion = versionDecision.NewVersion.WithPrefix()
 	result.ChangeType = versionDecision.ChangeType
 
 	if versionDecision.RequiresApproval {
 		p.logger.Warn("Version bump requires manual approval", map[string]interface{}{
-			"currentVersion": currentVersion.String(),
-			"newVersion":     versionDecision.NewVersion.String(),
+			"currentVersion": currentVersion.WithPrefix(),
+			"newVersion":     versionDecision.NewVersion.WithPrefix(),
 			"changeType":     versionDecision.ChangeType.String(),
 			"reason":         versionDecision.Reason,
 		})
 	}
 
-	buildResults, err := p.build(ctx, versionDecision.NewVersion.String())
+	buildResults, err := p.build(ctx, versionDecision.NewVersion.WithPrefix())
 	if err != nil {
 		result.Success = false
 		result.Error = err
@@ -140,7 +140,7 @@ func (p *ReleasePipeline) Execute(ctx context.Context, commits []string, fileCha
 	}
 	result.TestResults = testResults
 
-	deployResults, err := p.deploy(ctx, versionDecision.NewVersion.String(), buildResults)
+	deployResults, err := p.deploy(ctx, versionDecision.NewVersion.WithPrefix(), buildResults)
 	if err != nil {
 		result.Success = false
 		result.Error = err
@@ -182,14 +182,14 @@ func (p *ReleasePipeline) decideVersion(currentVersion Version, analysis ChangeA
 	p.logger.SetStage(StageVersionDecision)
 
 	p.logger.Info("Determining version bump", map[string]interface{}{
-		"currentVersion": currentVersion.String(),
+		"currentVersion": currentVersion.WithPrefix(),
 	})
 
 	decision := p.versionEngine.DetermineNewVersion(currentVersion, analysis)
 
 	p.logger.Info("Version decision made", map[string]interface{}{
-		"currentVersion": decision.CurrentVersion.String(),
-		"newVersion":     decision.NewVersion.String(),
+		"currentVersion": decision.CurrentVersion.WithPrefix(),
+		"newVersion":     decision.NewVersion.WithPrefix(),
 		"changeType":     decision.ChangeType.String(),
 		"reason":         decision.Reason,
 		"confidence":     decision.Confidence,
