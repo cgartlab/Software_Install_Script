@@ -209,11 +209,17 @@ func parseWingetSearch(output string) []PackageInfo {
 	lines := strings.Split(output, "\n")
 
 	// 找到标题行和分隔行
+	// 支持中文和英文表头
 	dataStart := -1
 	for i, line := range lines {
-		if strings.Contains(line, "Name") && strings.Contains(line, "Id") {
-			dataStart = i + 2 // 跳过标题行和分隔行
-			break
+		// 检查是否包含表头（中文或英文）
+		if (strings.Contains(line, "Name") && strings.Contains(line, "Id")) ||
+			(strings.Contains(line, "名称") && strings.Contains(line, "ID")) {
+			// 找到分隔行（通常是 --- 或类似）
+			if i+1 < len(lines) && strings.Contains(lines[i+1], "-") {
+				dataStart = i + 2 // 跳过标题行和分隔行
+				break
+			}
 		}
 	}
 
@@ -224,7 +230,7 @@ func parseWingetSearch(output string) []PackageInfo {
 	// 解析数据行
 	for i := dataStart; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
-		if line == "" {
+		if line == "" || strings.HasPrefix(line, "<") {
 			continue
 		}
 
