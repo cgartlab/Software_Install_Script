@@ -537,9 +537,7 @@ func runUninstallPackages(packages []string) {
 }
 
 func runSearch(query string) {
-	if !ensureEnvironmentReady() {
-		os.Exit(1)
-	}
+	// 搜索不需要环境检查
 	ui.RunSearch(query)
 }
 
