@@ -718,12 +718,3 @@ func (m StatusModel) View() string {
 	return b.String()
 }
 
-// getOSName 获取操作系统名称
-func getOSName() string {
-	return runtime.GOOS
-}
-
-// getArch 获取架构
-func getArch() string {
-	return runtime.GOARCH
-}

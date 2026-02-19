@@ -309,8 +309,9 @@ func (tm *TestManager) parseCoverage(output string) float64 {
 				if part == "coverage:" && i+1 < len(parts) {
 					coverageStr := strings.TrimSuffix(parts[i+1], "%")
 					var coverage float64
-					fmt.Sscanf(coverageStr, "%f", &coverage)
-					return coverage / 100
+					if _, err := fmt.Sscanf(coverageStr, "%f", &coverage); err == nil {
+						return coverage / 100
+					}
 				}
 			}
 		}

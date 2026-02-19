@@ -193,7 +193,11 @@ func (d *Database) SavePackages(packages []Package) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+			// 忽略 Rollback 错误（可能是事务已提交）
+		}
+	}()
 
 	stmt, err := tx.Prepare(`
 		INSERT OR REPLACE INTO packages (id, name, publisher, version, source, created_at)

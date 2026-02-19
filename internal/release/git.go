@@ -101,8 +101,12 @@ func (g *GitManager) GetDiffSinceTag(tag string) (*GitDiff, error) {
 		if len(parts) >= 3 {
 			added := 0
 			deleted := 0
-			fmt.Sscanf(parts[0], "%d", &added)
-			fmt.Sscanf(parts[1], "%d", &deleted)
+			if _, err := fmt.Sscanf(parts[0], "%d", &added); err != nil {
+				added = 0
+			}
+			if _, err := fmt.Sscanf(parts[1], "%d", &deleted); err != nil {
+				deleted = 0
+			}
 
 			fileChange := FileChange{
 				Path:         parts[2],

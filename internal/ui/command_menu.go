@@ -136,13 +136,7 @@ func NewCommandMenu() CommandMenuModel {
 
 // runCommand 运行命令（通过 exec 重新调用 sis）
 func runCommand(cmd string) {
-	// 重新调用 sis 命令
-	args := os.Args[1:]
-	// 如果已经有子命令，直接传递
-	if len(args) > 0 && args[0] != "" {
-		// 已经有参数，不处理
-	}
-	// 实际上我们应该直接执行对应的功能，但为了简单，显示提示
+	// 显示提示
 	fmt.Println()
 	fmt.Println(InfoStyle.Render(fmt.Sprintf("Run: sis %s [args...]", cmd)))
 	fmt.Println()

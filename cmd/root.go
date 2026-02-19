@@ -103,6 +103,12 @@ func printComprehensiveHelp() {
 	fmt.Println(ui.HelpStyle.Render(appinfo.Copyright))
 }
 
+// 以下函数保留供未来使用或命令行模式
+var _ = runStartupChecks
+var _ = handleAutoUpdatePreference
+var _ = runAutomaticUpdateCheck
+var _ = runInteractiveTUI
+
 func runStartupChecks() {
 	handleAutoUpdatePreference()
 	if config.GetBool("auto_update_check") {

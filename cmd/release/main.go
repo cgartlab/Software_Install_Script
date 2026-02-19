@@ -12,7 +12,7 @@ import (
 
 var (
 	configPath    = flag.String("config", "release-config.json", "Path to release configuration file")
-	projectName   = flag.String("project", "", "Project name")
+	projectName   = flag.String("project", "", "Current version tag (auto-detected if not provided)")
 	currentTag    = flag.String("tag", "", "Current version tag (auto-detected if not provided)")
 	dryRun        = flag.Bool("dry-run", false, "Perform a dry run without making changes")
 	skipTests     = flag.Bool("skip-tests", false, "Skip test execution")
@@ -20,6 +20,11 @@ var (
 	verbose       = flag.Bool("verbose", false, "Enable verbose output")
 	outputFormat  = flag.String("output", "text", "Output format (text, json)")
 )
+
+// 使用空白标识符避免 unused 警告
+var _ = skipTests
+var _ = skipDeploy
+var _ = verbose
 
 func main() {
 	flag.Parse()
