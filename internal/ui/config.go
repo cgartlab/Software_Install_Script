@@ -628,8 +628,15 @@ func RunClean() {
 
 // RunStatus 运行状态检查
 func RunStatus() {
+	model := NewStatusModel()
+
+	if !isInteractiveTerminal() {
+		fmt.Print(model.renderPlainText())
+		return
+	}
+
 	// 在 TUI 环境中使用独立的 TUI 程序显示状态
-	p := tea.NewProgram(NewStatusModel(), tea.WithAltScreen())
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -650,11 +657,11 @@ type StatusModel struct {
 // NewStatusModel 创建状态模型
 func NewStatusModel() StatusModel {
 	m := StatusModel{
-		osName:       runtime.GOOS,
-		arch:         runtime.GOARCH,
-		packageMgr:   "winget",
-		pkgAvailable: true,
+		osName:     runtime.GOOS,
+		arch:       runtime.GOARCH,
+		packageMgr: detectPackageManagerName(),
 	}
+	m.pkgAvailable = m.packageMgr != "unknown"
 
 	// 获取已安装软件数量
 	inst := installer.NewInstaller()
@@ -666,6 +673,45 @@ func NewStatusModel() StatusModel {
 	}
 
 	return m
+}
+
+func detectPackageManagerName() string {
+	inst := installer.NewInstaller()
+	if inst == nil {
+		return "unknown"
+	}
+
+	switch v := inst.(type) {
+	case *installer.WindowsInstaller:
+		return "winget"
+	case *installer.MacOSInstaller:
+		return "brew"
+	case interface{ PackageManager() string }:
+		pm := v.PackageManager()
+		if pm == "" {
+			return "linux-pkg-manager"
+		}
+		return pm
+	default:
+		return "unknown"
+	}
+}
+
+func (m StatusModel) renderPlainText() string {
+	var b strings.Builder
+	b.WriteString("系统状态\n\n")
+	b.WriteString("平台信息:\n")
+	b.WriteString(fmt.Sprintf("  OS: %s\n", m.osName))
+	b.WriteString(fmt.Sprintf("  Arch: %s\n\n", m.arch))
+	b.WriteString("包管理器:\n")
+	if m.pkgAvailable {
+		b.WriteString(fmt.Sprintf("  %s: 可用\n\n", m.packageMgr))
+	} else {
+		b.WriteString(fmt.Sprintf("  %s: 不可用\n\n", m.packageMgr))
+	}
+	b.WriteString("已安装软件:\n")
+	b.WriteString(fmt.Sprintf("  总计：%d 个软件\n", m.installedCnt))
+	return b.String()
 }
 
 // Init 初始化
@@ -717,4 +763,3 @@ func (m StatusModel) View() string {
 
 	return b.String()
 }
-

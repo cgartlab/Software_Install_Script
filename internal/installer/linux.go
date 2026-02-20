@@ -31,6 +31,13 @@ func detectLinuxPackageManager() (string, bool) {
 	return "", false
 }
 
+func (l *LinuxInstaller) PackageManager() string {
+	if l == nil || l.manager == "" {
+		return "unknown"
+	}
+	return l.manager
+}
+
 func (l *LinuxInstaller) Install(packageID string) (*InstallResult, error) {
 	if packageID == "" {
 		return &InstallResult{Package: PackageInfo{ID: packageID}, Status: StatusFailed, Error: fmt.Errorf("empty package ID")}, fmt.Errorf("empty package ID")
