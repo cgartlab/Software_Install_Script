@@ -134,10 +134,10 @@ jobs:
           
           for PLATFORM in "${PLATFORMS[@]}"; do
             IFS='/' read -r GOOS GOARCH SUFFIX <<< "$PLATFORM"
-            OUTPUT="sis-${GOOS}-${GOARCH}${SUFFIX}"
+            OUTPUT="sis-${VERSION}-${GOOS}-${GOARCH}${SUFFIX}"
             
             GOOS=$GOOS GOARCH=$GOARCH go build \
-              -ldflags "-s -w -X main.version=${VERSION}" \
+              -ldflags "-s -w -X cmd.version=${VERSION}" \
               -o "release/${OUTPUT}" \
               main.go
             

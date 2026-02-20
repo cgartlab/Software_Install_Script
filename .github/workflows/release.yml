@@ -56,15 +56,16 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ github.ref_name || github.event.inputs.version }}
         run: |
-          output_name="sis-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
-          go build -ldflags "-s -w -X cmd.version=${{ github.ref_name || github.event.inputs.version }}" -o "${output_name}" main.go
+          output_name="sis-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
+          go build -ldflags "-s -w -X cmd.version=${VERSION}" -o "${output_name}" main.go
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sis-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: sis-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+          name: sis-${{ github.ref_name || github.event.inputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: sis-${{ github.ref_name || github.event.inputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
 
   release:
     needs: build
