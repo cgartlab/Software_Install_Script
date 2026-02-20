@@ -140,7 +140,7 @@ func (bm *BuildManager) buildPlatform(ctx context.Context, platform PlatformConf
 		args = append(args, key, value)
 	}
 
-	args = append(args, "-ldflags", fmt.Sprintf("-s -w -X main.version=%s", version))
+	args = append(args, "-ldflags", fmt.Sprintf("-s -w -X cmd.version=%s", version))
 	args = append(args, ".")
 
 	cmd := exec.CommandContext(ctx, "go", args...)
