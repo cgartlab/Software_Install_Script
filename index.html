@@ -230,16 +230,45 @@
         }
 
         .hero {
-            text-align: center;
-            margin-bottom: 80px;
+            margin-bottom: 64px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .hero-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            padding: 34px;
+            box-shadow: 0 4px 24px var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            font-size: clamp(2.1rem, 5vw, 3.2rem);
             font-weight: 700;
             letter-spacing: -0.035em;
-            line-height: 1.15;
-            margin-bottom: 24px;
+            line-height: 1.12;
+            margin-bottom: 18px;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -247,19 +276,105 @@
         }
 
         .hero-subtitle {
-            font-size: clamp(1.0625rem, 2vw, 1.1875rem);
+            font-size: clamp(1rem, 2vw, 1.125rem);
             color: var(--text-secondary);
-            max-width: 520px;
-            margin: 0 auto 36px;
+            margin: 0 0 24px;
             line-height: 1.8;
             letter-spacing: 0.005em;
         }
 
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #b45309;
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-tertiary);
+        }
+
         .tags {
             display: flex;
-            justify-content: center;
             gap: 8px;
             flex-wrap: wrap;
+        }
+
+        .hero-preview {
+            display: grid;
+            gap: 14px;
+        }
+
+        .mini-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .mini-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .mini-card p {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .stat-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
         }
 
         .tag {
@@ -271,6 +386,44 @@
             border-radius: 100px;
             border: 1px solid var(--border-color);
             letter-spacing: 0.02em;
+        }
+
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 56px;
+        }
+
+        .intro-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .intro-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .intro-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .quickstart {
+            margin-bottom: 64px;
+        }
+
+        .quickstart ol {
+            margin-left: 20px;
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            line-height: 1.9;
         }
 
         .section {
@@ -860,13 +1013,31 @@
             color: var(--text-primary);
         }
 
+        @media (max-width: 960px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 640px) {
             main {
                 padding: 56px 0 88px;
             }
 
+            .hero-panel {
+                padding: 22px;
+            }
+
             .hero {
-                margin-bottom: 64px;
+                margin-bottom: 48px;
             }
 
             .section {
@@ -876,6 +1047,10 @@
 
             .platform-selector {
                 flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
             .feature-item {
@@ -982,16 +1157,65 @@
 
         <main>
             <section class="hero">
-                <h1 class="hero-title">SwiftInstall</h1>
-                <p class="hero-subtitle">快速、简单、可靠的跨平台软件安装工具，支持本地数据库搜索、视觉进度条和智能命令菜单，让软件部署变得轻而易举。</p>
-                <div class="tags">
-                    <span class="tag">Go</span>
-                    <span class="tag">CLI</span>
-                    <span class="tag">跨平台</span>
-                    <span class="tag">开源</span>
-                    <span class="tag">本地数据库</span>
-                    <span class="tag">视觉进度条</span>
+                <div class="hero-panel">
+                    <span class="hero-kicker">SwiftInstall · 新一代安装体验</span>
+                    <h1 class="hero-title">重新定义你的软件安装流程</h1>
+                    <p class="hero-subtitle">SwiftInstall 以统一命令覆盖多平台安装场景：从查找、安装到状态追踪，一条命令即可完成，速度快、反馈清晰、上手零负担。</p>
+                    <div class="hero-actions">
+                        <a href="https://github.com/cgartlab/SwiftInstall/releases" class="btn btn-primary" target="_blank">立即下载</a>
+                        <a href="https://cgartlab.com/SwiftInstall/docs" class="btn btn-ghost">查看文档</a>
+                    </div>
+                    <div class="tags">
+                        <span class="tag">Go</span>
+                        <span class="tag">CLI</span>
+                        <span class="tag">跨平台</span>
+                        <span class="tag">本地数据库</span>
+                        <span class="tag">可视化进度</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item"><div class="stat-value">3 大平台</div><div class="stat-label">Windows / Linux / macOS</div></div>
+                        <div class="stat-item"><div class="stat-value">1 条命令</div><div class="stat-label">安装流程标准化</div></div>
+                        <div class="stat-item"><div class="stat-value">开源</div><div class="stat-label">GitHub 持续迭代</div></div>
+                    </div>
                 </div>
+                <aside class="hero-panel hero-preview">
+                    <div class="mini-card">
+                        <h3>智能命令菜单</h3>
+                        <p>输入 <code>sis</code> 即可进入命令浏览与帮助提示，减少记忆成本，提高新手上手速度。</p>
+                    </div>
+                    <div class="mini-card">
+                        <h3>本地数据库搜索</h3>
+                        <p>通过本地软件元数据实现快速检索，离线场景下也能保持稳定查找体验。</p>
+                    </div>
+                    <div class="mini-card">
+                        <h3>安装进度可视化</h3>
+                        <p>终端中直接展示下载与安装状态，关键节点实时反馈，排障更直接。</p>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="intro-grid">
+                <article class="intro-card">
+                    <h3>极简接入</h3>
+                    <p>一键安装后可立即开始使用，不依赖复杂环境配置，适合个人和团队统一部署。</p>
+                </article>
+                <article class="intro-card">
+                    <h3>稳定可靠</h3>
+                    <p>围绕安装链路做了明确状态标记与反馈展示，便于持续交付中的自动化接入。</p>
+                </article>
+                <article class="intro-card">
+                    <h3>开发者友好</h3>
+                    <p>命令直观、文档完整、更新透明，便于在日常开发和运维中快速落地。</p>
+                </article>
+            </section>
+
+            <section class="section quickstart">
+                <h2 class="section-title">快速开始</h2>
+                <ol>
+                    <li>从 Releases 页面下载适配你系统的可执行文件。</li>
+                    <li>将可执行文件加入 PATH，或按文档完成全局安装。</li>
+                    <li>在终端执行 <code>sis</code>，开始搜索并安装所需软件。</li>
+                </ol>
             </section>
         </main>
 
