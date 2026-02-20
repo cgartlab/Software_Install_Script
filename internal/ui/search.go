@@ -248,11 +248,51 @@ func (m SearchModel) View() string {
 
 // RunSearch 运行搜索
 func RunSearch(query string) {
+	if !isInteractiveTerminal() {
+		if err := runSearchPlainText(query); err != nil {
+			fmt.Println(ErrorStyle.Render(err.Error()))
+			os.Exit(1)
+		}
+		return
+	}
+
 	p := tea.NewProgram(NewSearchModel(query), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func runSearchPlainText(query string) error {
+	if strings.TrimSpace(query) == "" {
+		return fmt.Errorf("search command requires a query in non-interactive mode")
+	}
+
+	inst := installer.NewInstaller()
+	if inst == nil {
+		return fmt.Errorf("unsupported platform")
+	}
+
+	results, err := inst.Search(query)
+	if err != nil {
+		return fmt.Errorf("search failed: %w", err)
+	}
+
+	if len(results) == 0 {
+		fmt.Println(WarningStyle.Render(i18n.T("search_no_results")))
+		return nil
+	}
+
+	fmt.Println(TitleStyle.Render(i18n.T("search_title")))
+	fmt.Printf("%-4s %-36s %s\n", "#", i18n.T("config_name"), i18n.T("config_id"))
+	for i, pkg := range results {
+		name := pkg.Name
+		if name == "" {
+			name = pkg.ID
+		}
+		fmt.Printf("%-4d %-36s %s\n", i+1, name, pkg.ID)
+	}
+	return nil
 }
 
 // ShowPackageList 显示包列表
